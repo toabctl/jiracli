@@ -1,0 +1,281 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2013 Thomas Bechtold <thomasbechtold@jpberlin.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import print_function
+
+import os
+import sys
+import argparse
+import ConfigParser
+import logging
+import getpass
+import datetime
+from collections import OrderedDict
+from termcolor import colored as colorfunc
+from jira.client import JIRA
+
+#log object
+log = None
+#path to the user configuration file
+user_config_path=os.path.expanduser('~/.jiracli.ini')
+
+
+def setup_logging(debug):
+    global log
+    log = logging.getLogger('jiracli')
+    sh = logging.StreamHandler()
+    if debug:
+        log.setLevel(logging.DEBUG)
+        sh.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    sh.setFormatter(formatter)
+    log.addHandler(sh)
+
+
+def config_credentials_get():
+    #get username, password and url
+    user = raw_input("username:")
+    password = getpass.getpass()
+    url = raw_input("url:")
+    return user, password, url
+
+
+def config_get():
+    conf = ConfigParser.SafeConfigParser()
+    conf.read([user_config_path])
+    section_name = "defaults"
+    if not conf.has_section(section_name):
+        user, password, url = config_credentials_get()
+        conf.add_section(section_name)
+        conf.set(section_name, "user", user)
+        conf.set(section_name, "password", password)
+        conf.set(section_name, "url", url)
+        with open(user_config_path, 'w') as f:
+            conf.write(f)
+            log.info("username and password written to '{0}'".format(user_config_path))
+    else:
+        log.debug("{0} section already available in '{1}'".format(section_name, user_config_path))
+    return dict(conf.items(section_name))
+
+
+def jira_obj_get(conf):
+    options = {
+        'server': conf['url'],
+    }
+    return JIRA(options, basic_auth=(conf['user'], conf['password']))
+
+
+def dtstr2dt(dtstr):
+    """nicer datetime string
+    jira delivers something like '2013-11-07T16:13:24.000+0100'"""
+    #TODO: maybe %c is not the best formatter. Output depends on current locale.
+    return datetime.datetime.strptime(dtstr[:-9], "%Y-%m-%dT%H:%M:%S").strftime("%c")
+
+
+def issue_status_color(status):
+    """get color for given issue status"""
+    if status.lower() == 'closed':
+        return 'green'
+    elif status.lower() == 'open':
+        return 'red'
+    elif status.lower() == 'in progress':
+        return 'yellow'
+    else:
+        return 'blue'
+
+
+def issue_header(issue):
+    """get a single line string for an issue"""
+    return "%s (%s)" % (colorfunc("%s, %s: %s" % (issue.key,
+                                                  issue.fields.issuetype.name,
+                                                  issue.fields.summary), None, attrs=['bold', 'underline']),
+                        colorfunc("%s, %s" % (issue.fields.status.name,
+                                              issue.fields.priority.name),
+                                  issue_status_color(issue.fields.status.name),
+                                  attrs=['bold']))
+
+
+def issue_format(issue, show_desc=False, show_comments=False):
+    """return a dict with fields which describe the issue"""
+    fields = OrderedDict()
+    if show_desc:
+        fields['description'] = "\n%s" % (issue.fields.description)
+    fields['created'] = "%s, by %s" % (dtstr2dt(issue.fields.created), issue.fields.reporter.name)
+    if hasattr(issue.fields.assignee, 'name'):
+        fields['assignee'] = issue.fields.assignee.name
+    fields['updated'] = dtstr2dt(issue.fields.updated)
+    if hasattr(issue.fields, 'versions'):
+        fields['versions'] = ", ".join(map(lambda x: x.name, issue.fields.fixVersions))
+    if hasattr(issue.fields, 'components'):
+        fields['components'] = ", ".join(map(lambda x: x.name, issue.fields.components))
+    if hasattr(issue.fields, 'labels'):
+        fields['labels'] = ", ".join(map(lambda x: x, issue.fields.labels))
+    if hasattr(issue.fields, 'attachment'):
+        fields['attachment'] = ", ".join(map(lambda x: x.filename, issue.fields.attachment))
+    if show_comments:
+        if hasattr(issue.fields, 'comment'):
+            fields['comments'] = "%s\n%s" % (len(issue.fields.comment.comments), "\n\n".join(map(lambda x: "%s\n%s" % (colorfunc("%s, %s" % (dtstr2dt(x.updated), x.updateAuthor.name), None, attrs=['reverse']), x.body),  issue.fields.comment.comments)))
+        else:
+            fields['comments'] = "0"
+
+    #print(dir(issue.fields))
+    #add empty strings if field not available
+    for k,v in fields.items():
+        if not v:
+            fields[k] = ""
+    return fields
+
+
+def issue_list_print(issue_list, show_desc, show_comments, oneline):
+    """print a list of issues"""
+    #disable color if oneline is used
+    if oneline:
+        global colorfunc
+        colorfunc = lambda *a,**k:str(a[0])
+
+    for issue in issue_list:
+        #issue header
+        print(issue_header(issue))
+        if oneline:
+            continue
+        #issue description
+        desc_fields = issue_format(issue,
+                                   show_desc=show_desc,
+                                   show_comments=show_comments)
+        print("\n".join( " : ".join((k.ljust(20),v)) for k,v in desc_fields.items() ) + "\n")
+
+def issue_search_result_print(searchstring_list):
+    """print issues for the given search string(s)"""
+    for searchstr in searchstring_list:
+        issues = jira.search_issues(searchstr)
+        #FIXME: debug problem why comments are not available if I use jira.search_issues()
+        #get issues again.
+        issues = [jira.issue(i.key) for i in issues]
+        issue_list_print(issues, args['issue_desc'], args['issue_comments'], args['issue_oneline'])
+
+
+def filter_list_print(filter_list):
+    """print a list of filters"""
+    for f in filter_list:
+        #header
+        print("%s" % (colorfunc("%s, %s" % (f.id,
+                                         f.name),
+                                  None, attrs=['bold', 'underline'])))
+        #fields to show for the filter
+        fields = OrderedDict()
+        fields['Url'] = f.viewUrl
+        fields['description'] = f.description
+        fields['owner'] = f.owner.name
+        fields['jql'] = f.jql
+        #add empty strings if field not available
+        for k,v in fields.items():
+            if not v:
+                fields[k] = ""
+
+        print("\n".join( " : ".join((k.ljust(20),v)) for k,v in fields.items() ) + "\n")
+
+
+def parse_args():
+    """parse command line arguments"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true',
+                        help='print debug information (default: %(default)s)')
+    parser.add_argument("--project-list", action='store_true',
+                        help='list available projects')
+
+    group_issue = parser.add_argument_group('issue')
+    group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
+                        help='issue(s) to show')
+    group_issue.add_argument('--issue-search', nargs='+', metavar='searchstring',
+                             help='search for issues. searchstring is ie: assignee=CurrentUser() and status!="Closed"')
+    group_issue.add_argument('--issue-search-by-filter', nargs='+', metavar='filter-id',
+                             help='search for issues by filter-id.')
+    group_issue.add_argument('--issue-desc', action='store_true',
+                        help='show issue description (default: %(default)s)')
+    group_issue.add_argument('--issue-comments', action='store_true',
+                        help='show issue comment(s) (default: %(default)s)')
+    group_issue.add_argument('--issue-oneline', action='store_true',
+                        help='show single line per issue (default: %(default)s)')
+
+    group_watch = parser.add_argument_group('watch')
+    group_watch.add_argument("--watch-add", nargs='+', metavar='issue',
+                        help='Add watch to the given issue(s)')
+    group_watch.add_argument("--watch-remove", nargs='+', metavar='issue',
+                        help='Remove watch from the given issue(s)')
+    parser.add_argument("--filter-list-fav", action='store_true',
+                        help='list favourite filters')
+
+    parser.add_argument("--no-color", action='store_true',
+                        help='disable colorful output (default: %(default)s)')
+    return vars(parser.parse_args())
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    setup_logging(args['debug'])
+    conf = config_get()
+    jira = jira_obj_get(conf)
+
+    #use colorful output?
+    if args['no_color']:
+        colorfunc = lambda *a,**k:str(a[0])
+
+    #print project list and exit
+    if args['project_list']:
+        for p in jira.projects():
+            print(p.id.ljust(10), p.name.ljust(30))
+        sys.exit(0)
+
+    #print favourite filters for current user
+    if args['filter_list_fav']:
+        filter_list_print(jira.favourite_filters())
+        sys.exit(0)
+
+    #add watch to issue(s)
+    if args['watch_add']:
+        for i in args['watch_add']:
+            jira.add_watcher(i, conf['user'])
+            log.debug("added watch for issue '%s'" % (i))
+        sys.exit(0)
+
+    #remove watch to issue(s)
+    if args['watch_remove']:
+        print(dir(jira))
+        sys.exit(0)
+        for i in args['watch_remove']:
+            jira.remove_watcher(i, conf['user'])
+            log.debug("removed watch for issue '%s'" % (i))
+        sys.exit(0)
+
+    #print issue by filter search
+    if args['issue_search_by_filter']:
+        searchstring_list = [jira.filter(f).jql for f in args['issue_search_by_filter']]
+        issue_search_result_print(searchstring_list)
+        sys.exit(0)
+
+
+    #print issue search results
+    if args['issue_search']:
+        issue_search_result_print(args['issue_search'])
+        sys.exit(0)
+
+    #print issue(s) and exit
+    if args['issue']:
+        issues = [jira.issue(i) for i in args['issue']]
+        issue_list_print(issues, args['issue_desc'], args['issue_comments'], args['issue_oneline'])
+        sys.exit(0)
