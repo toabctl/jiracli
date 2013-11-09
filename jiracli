@@ -197,6 +197,8 @@ def parse_args():
                         help='print debug information (default: %(default)s)')
     parser.add_argument("--project-list", action='store_true',
                         help='list available projects')
+    parser.add_argument("--project-list-components", nargs=1, metavar='project-key',
+                        help='list available project components for the given project-key')
 
     group_issue = parser.add_argument_group('issue')
     group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
@@ -238,7 +240,14 @@ if __name__ == "__main__":
     #print project list and exit
     if args['project_list']:
         for p in jira.projects():
-            print(p.id.ljust(10), p.name.ljust(30))
+            print(p.id.ljust(10), p.key.ljust(10), p.name.ljust(30))
+        sys.exit(0)
+
+    #print project components
+    if args['project_list_components']:
+        for pro in args['project_list_components']:
+            components = jira.project_components(pro)
+            [print(c.id.ljust(10), c.name) for c in components]
         sys.exit(0)
 
     #print favourite filters for current user
