@@ -195,11 +195,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         help='print debug information (default: %(default)s)')
+    parser.add_argument("--issue-type-list", action='store_true',
+                        help='list available issue types')
     parser.add_argument("--project-list", action='store_true',
                         help='list available projects')
     parser.add_argument("--project-list-components", nargs=1, metavar='project-key',
                         help='list available project components for the given project-key')
-
     group_issue = parser.add_argument_group('issue')
     group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
                         help='issue(s) to show')
@@ -241,6 +242,12 @@ if __name__ == "__main__":
     if args['project_list']:
         for p in jira.projects():
             print(p.id.ljust(10), p.key.ljust(10), p.name.ljust(30))
+        sys.exit(0)
+
+    #print issue types
+    if args['issue_type_list']:
+        for it in jira.issue_types():
+            print(it.id.ljust(10), it.name.ljust(30), it.description.ljust(10))
         sys.exit(0)
 
     #print project components
