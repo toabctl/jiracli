@@ -75,3 +75,12 @@ Now add and remove a component from the given list to an issue:
 
 	./jiracli --component-add PROJECT-1234 "COMP1"
 	./jiracli --component-remove PROJECT-1234 "COMP1"
+
+### Example: Add a comment to an issue
+The following command open a text editor to insert the comment:
+
+	./jiracli --issue-add-comment SMBCAP-3724
+
+The short form is:
+
+	./jiracli --issue-add-comment SMBCAP-3724 -m "another comment"

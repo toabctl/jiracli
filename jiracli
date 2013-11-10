@@ -225,6 +225,8 @@ def parse_args():
                         help='list available projects')
     parser.add_argument("--project-list-components", nargs=1, metavar='project-key',
                         help='list available project components for the given project-key')
+    parser.add_argument("-m", "--message", nargs=1, metavar='message',
+                        help='a message. can be ie used together with --issue-add-comment')
     group_issue = parser.add_argument_group('issue')
     group_issue.add_argument('-c', '--issue-create', nargs=5, metavar=('project-key', 'issue-type', 'summary', 'labels', 'components'),
                              help='create a new issue. "labels" can be a single label or a comma seperated list of labels. "components" can be a comma seperated list of components.')
@@ -234,6 +236,8 @@ def parse_args():
                              help='search for issues. searchstring is ie: assignee=CurrentUser() and status!="Closed"')
     group_issue.add_argument('--issue-search-by-filter', nargs='+', metavar='filter-id',
                              help='search for issues by filter-id.')
+    group_issue.add_argument('--issue-add-comment', nargs=1, metavar='issue-key',
+                             help='add a comment to given issue.')
     group_issue.add_argument('--issue-desc', action='store_true',
                         help='show issue description (default: %(default)s)')
     group_issue.add_argument('--issue-comments', action='store_true',
@@ -352,6 +356,17 @@ if __name__ == "__main__":
         for i in args['watch_remove']:
             jira.remove_watcher(i, conf['user'])
             log.debug("removed watch for issue '%s'" % (i))
+        sys.exit(0)
+
+    #add comment to issue
+    if args['issue_add_comment']:
+        if args['message']:
+            comment = args['message'][0]
+        else:
+            comment = editor_get_text("-- your comment for issue %s" % (args['issue_add_comment'][0]))
+        issue = jira.issue(args['issue_add_comment'][0])
+        jira.add_comment(issue, comment)
+        log.debug("comment added to issue '%s'" % (args['issue_add_comment'][0]))
         sys.exit(0)
 
     #print issue by filter search
