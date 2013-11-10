@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 import os
 
-with open(os.path.join(os.path.dirname(__file__), "README.md"), "r") as f:
+with open(os.path.join(os.path.dirname(__file__), "README.rst"), "r") as f:
     long_desc = "".join(f.readlines())
 
 setup(
