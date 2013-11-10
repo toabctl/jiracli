@@ -139,6 +139,16 @@ def issue_format(issue, show_desc=False, show_comments=False):
         fields['labels'] = ", ".join(map(lambda x: x, issue.fields.labels))
     if hasattr(issue.fields, 'attachment'):
         fields['attachment'] = ", ".join(map(lambda x: x.filename, issue.fields.attachment))
+    if hasattr(issue.fields, 'issuelinks'):
+        link_list = list()
+        #inward issue: the issue to link from
+        #outward issue: the issue to link to
+        for link in issue.fields.issuelinks:
+            if 'outwardIssue' in link.raw:
+                link_list.append(link.raw['outwardIssue'])
+            elif 'inwardIssue' in link.raw:
+                link_list.append(link.raw['inwardIssue'])
+        fields['issuelinks'] = ", ".join(map(lambda x: x['key'], link_list))
     if show_comments:
         if hasattr(issue.fields, 'comment'):
             fields['comments'] = "%s\n%s" % (len(issue.fields.comment.comments), "\n\n".join(map(lambda x: "%s\n%s" % (colorfunc("%s, %s" % (dtstr2dt(x.updated), x.updateAuthor.name), None, attrs=['reverse']), x.body),  issue.fields.comment.comments)))
