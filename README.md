@@ -12,6 +12,12 @@ Try the help with:
 
 	./jiracli -h
 
+### Example: create a new issue:
+The following command creates a new issue for the project PROJECT. Issue type is `Dev Bug`, labels are `abc` and `def` and components are `xxx` and `yyyy`.
+
+	./jiracli  -c PROJECT "Dev Bug" "my test summary" "abc,def" "xxx,yyyy"
+
+
 ### Example: show a single issue:
 
 	./jiracli -i PROJECT-3535
@@ -41,10 +47,31 @@ The number `23905` in the filter head line is the filter-id. This id is used to 
 
 This command simply executes the search string given by the filter.
 
-### Searching with jql
+### Example: Searching with jql
 Useing the Jira query language to search is simple:
 
 	./jiracli --issue-search "assignee=CurrentUser() and status='Closed'" --issue-comment
 
 This command searches for all closed issues of the currently logged in user. The command also prints the comments for every issue.
 
+### Example: Add and remove issue watchers
+To get informed if something changed on an issue, there are watchers. The following commands add and remove a watch:
+
+	./jiracli --watch-add PROJECT-1234
+	./jiracli --watch-remove PROJECT-1234
+
+### Example: Add and remove labels
+Adding and removing labels is simple. First add a label called `testlabel` and then remove it:
+
+	./jiracli --label-add PROJECT-3724 "testlabel"
+	./jiracli --label-remove PROJECT-3724 "testlabel"
+
+### Example: Add and remove components
+A list of available components for a given project is available with:
+
+	./jiracli  --project-list-components PROJECT
+
+Now add and remove a component from the given list to an issue:
+
+	./jiracli --component-add PROJECT-1234 "COMP1"
+	./jiracli --component-remove PROJECT-1234 "COMP1"
