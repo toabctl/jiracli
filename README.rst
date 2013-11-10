@@ -6,6 +6,20 @@ Installation
 ============
 `python2.7` and `jira-python` from https://pypi.python.org/pypi/jira-python/ is needed.
 
+ * You can install `jiracli` with pip in a virtual environment::
+
+     virtualenv myenv
+     source myenv/bin/activate
+     pip install jiracli
+
+ * or without an virtual env::
+
+     pip install jiracli
+
+ * or directly from the extracted source::
+
+     python setup.py install
+
 Configuration
 =============
 During the first run, `jiracli` asks for username, password and Jira url. All values are stored in `~/.jiracli.ini`.
