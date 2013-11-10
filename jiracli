@@ -28,6 +28,7 @@ import datetime
 from collections import OrderedDict
 from termcolor import colored as colorfunc
 from jira.client import JIRA
+import tempfile
 
 #log object
 log = None
@@ -45,6 +46,17 @@ def setup_logging(debug):
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     sh.setFormatter(formatter)
     log.addHandler(sh)
+
+def editor_get_text(text_template):
+    """get text from an editor via a tempfile"""
+    tf = tempfile.NamedTemporaryFile()
+    tf.write("-- lines starting with '--' will be ignored\n")
+    tf.write(text_template)
+    tf.flush()
+    editor = os.environ.setdefault("EDITOR","vim")
+    os.system("%s %s" % (editor, tf.name))
+    tf.seek(0)
+    return "\n".join([line for line in tf.read().split('\n') if not line.startswith("--")])
 
 
 def config_credentials_get():
@@ -202,6 +214,8 @@ def parse_args():
     parser.add_argument("--project-list-components", nargs=1, metavar='project-key',
                         help='list available project components for the given project-key')
     group_issue = parser.add_argument_group('issue')
+    group_issue.add_argument('-c', '--issue-create', nargs=5, metavar=('project-key', 'issue-type', 'summary', 'labels', 'components'),
+                             help='create a new issue. "labels" can be a single label or a comma seperated list of labels. "components" can be a comma seperated list of components.')
     group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
                         help='issue(s) to show')
     group_issue.add_argument('--issue-search', nargs='+', metavar='searchstring',
@@ -282,6 +296,27 @@ if __name__ == "__main__":
     if args['issue_search_by_filter']:
         searchstring_list = [jira.filter(f).jql for f in args['issue_search_by_filter']]
         issue_search_result_print(searchstring_list)
+        sys.exit(0)
+
+    #create a new issue
+    if args['issue_create']:
+        #get description from text editor
+        desc = editor_get_text("-- describe the issue here")
+        issue_dict = {
+            'project': {'key': args['issue_create'][0]},
+            'issuetype': {'name': args['issue_create'][1]},
+            'summary': args['issue_create'][2],
+            'description': desc,
+        }
+
+        if len(args['issue_create'][3]) > 0:
+            issue_dict['labels'] = args['issue_create'][3].split(',')
+
+        if len(args['issue_create'][4]) > 0:
+            issue_dict['components'] = [ {'name': c} for c in args['issue_create'][4].split(',')]
+
+        new_issue = jira.create_issue(fields=issue_dict)
+        issue_list_print([new_issue], True, True, False)
         sys.exit(0)
 
 
