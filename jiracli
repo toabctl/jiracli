@@ -251,10 +251,10 @@ def parse_args():
     group_issue.add_argument("--issue-label-remove", nargs=2, metavar=('issue', 'label'),
                         help='Remove a label from the given issue')
 
-    group_components = parser.add_argument_group('components')
-    group_components.add_argument("--component-add", nargs=2, metavar=('issue', 'component'),
+    #components
+    group_issue.add_argument("--issue-component-add", nargs=2, metavar=('issue', 'component'),
                         help='Add a component to the given issue')
-    group_components.add_argument("--component-remove", nargs=2, metavar=('issue', 'component'),
+    group_issue.add_argument("--issue-component-remove", nargs=2, metavar=('issue', 'component'),
                         help='Remove a component from the given issue')
 
     group_watch = parser.add_argument_group('watch')
@@ -326,18 +326,18 @@ if __name__ == "__main__":
         sys.exit(0)
 
     #add component to an issue
-    if args['component_add']:
-        issue = jira.issue(args['component_add'][0])
-        comp = {'name': args['component_add'][1]}
+    if args['issue_component_add']:
+        issue = jira.issue(args['issue_component_add'][0])
+        comp = {'name': args['issue_component_add'][1]}
         components_available = [{'name': c.name} for c in issue.fields.components]
         components_available.append(comp)
         issue.update(fields={"components" : components_available})
         sys.exit(0)
 
     #remove component from an issue
-    if args['component_remove']:
-        issue = jira.issue(args['component_remove'][0])
-        components_new = [{'name': x.name} for x in filter(lambda x: x.name.lower() != args['component_remove'][1].lower(), issue.fields.components)]
+    if args['issue_component_remove']:
+        issue = jira.issue(args['issue_component_remove'][0])
+        components_new = [{'name': x.name} for x in filter(lambda x: x.name.lower() != args['issue_component_remove'][1].lower(), issue.fields.components)]
         issue.update(fields={"components" : components_new})
         sys.exit(0)
 

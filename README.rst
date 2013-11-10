@@ -103,8 +103,8 @@ A list of available components for a given project is available with::
 
 Now add and remove a component from the given list to an issue::
 
-  ./jiracli --component-add PROJECT-1234 "COMP1"
-  ./jiracli --component-remove PROJECT-1234 "COMP1"
+  ./jiracli --issue-component-add PROJECT-1234 "COMP1"
+  ./jiracli --issue-component-remove PROJECT-1234 "COMP1"
 
 Example: Add a comment to an issue
 ----------------------------------
