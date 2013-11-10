@@ -245,10 +245,10 @@ def parse_args():
     group_issue.add_argument('--issue-comment-add', nargs=1, metavar='issue-key',
                              help='add a comment to given issue.')
 
-    group_label = parser.add_argument_group('label')
-    group_label.add_argument("--label-add", nargs=2, metavar=('issue', 'label'),
+    #labels
+    group_issue.add_argument("--issue-label-add", nargs=2, metavar=('issue', 'label'),
                         help='Add a label to the given issue')
-    group_label.add_argument("--label-remove", nargs=2, metavar=('issue', 'label'),
+    group_issue.add_argument("--issue-label-remove", nargs=2, metavar=('issue', 'label'),
                         help='Remove a label from the given issue')
 
     group_components = parser.add_argument_group('components')
@@ -312,16 +312,16 @@ if __name__ == "__main__":
         sys.exit(0)
 
     #add a label to an issue
-    if args['label_add']:
-        issue = jira.issue(args['label_add'][0])
-        issue.fields.labels.append(args['label_add'][1])
+    if args['issue_label_add']:
+        issue = jira.issue(args['issue_label_add'][0])
+        issue.fields.labels.append(args['issue_label_add'][1])
         issue.update(fields={"labels" : issue.fields.labels})
         sys.exit(0)
 
     #remove label from an issue
-    if args['label_remove']:
-        issue = jira.issue(args['label_remove'][0])
-        labels_new = filter(lambda x: x.lower() != args['label_remove'][1].lower(), issue.fields.labels)
+    if args['issue_label_remove']:
+        issue = jira.issue(args['issue_label_remove'][0])
+        labels_new = filter(lambda x: x.lower() != args['issue_label_remove'][1].lower(), issue.fields.labels)
         issue.update(fields={"labels" : labels_new})
         sys.exit(0)
 

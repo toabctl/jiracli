@@ -92,8 +92,8 @@ Example: Add and remove labels
 
 Adding and removing labels is simple. First add a label called `testlabel` and then remove it::
 
-  ./jiracli --label-add PROJECT-3724 "testlabel"
-  ./jiracli --label-remove PROJECT-3724 "testlabel"
+  ./jiracli --issue-label-add PROJECT-3724 "testlabel"
+  ./jiracli --issue-label-remove PROJECT-3724 "testlabel"
 
 Example: Add and remove components
 ----------------------------------
