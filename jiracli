@@ -229,6 +229,12 @@ def parse_args():
     group_issue.add_argument('--issue-oneline', action='store_true',
                         help='show single line per issue (default: %(default)s)')
 
+    group_label = parser.add_argument_group('label')
+    group_label.add_argument("--label-add", nargs=2, metavar=('issue', 'label'),
+                        help='Add a label to the given issue')
+    group_label.add_argument("--label-remove", nargs=2, metavar=('issue', 'label'),
+                        help='Remove a label from the given issue')
+
     group_watch = parser.add_argument_group('watch')
     group_watch.add_argument("--watch-add", nargs='+', metavar='issue',
                         help='Add watch to the given issue(s)')
@@ -275,6 +281,21 @@ if __name__ == "__main__":
     if args['filter_list_fav']:
         filter_list_print(jira.favourite_filters())
         sys.exit(0)
+
+    #add a label to an issue
+    if args['label_add']:
+        issue = jira.issue(args['label_add'][0])
+        issue.fields.labels.append(args['label_add'][1])
+        issue.update(fields={"labels" : issue.fields.labels})
+        sys.exit(0)
+
+    #remove label from an issue
+    if args['label_remove']:
+        issue = jira.issue(args['label_remove'][0])
+        labels_new = filter(lambda x: x.lower() != args['label_remove'][1].lower(), issue.fields.labels)
+        issue.update(fields={"labels" : labels_new})
+        sys.exit(0)
+
 
     #add watch to issue(s)
     if args['watch_add']:
