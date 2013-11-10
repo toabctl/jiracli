@@ -219,6 +219,8 @@ def parse_args():
                         help='print debug information (default: %(default)s)')
     parser.add_argument("--issue-type-list", action='store_true',
                         help='list available issue types')
+    parser.add_argument("--issue-link-types-list", action='store_true',
+                        help='list available issue link types')
     parser.add_argument("--project-list", action='store_true',
                         help='list available projects')
     parser.add_argument("--project-list-components", nargs=1, metavar='project-key',
@@ -273,6 +275,13 @@ if __name__ == "__main__":
     #use colorful output?
     if args['no_color']:
         colorfunc = lambda *a,**k:str(a[0])
+
+    #print issue link types
+    if args['issue_link_types_list']:
+        #print("%s%s%s" % ("name".ljust(30), "inward".ljust(25), "outward".ljust(25)))
+        for i in jira.issue_link_types():
+              print("%s%s%s" % (i.name.ljust(30), i.inward.ljust(25), i.outward.ljust(25)))
+        sys.exit(0)
 
     #print project list and exit
     if args['project_list']:
