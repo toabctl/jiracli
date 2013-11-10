@@ -227,46 +227,49 @@ def parse_args():
                         help='list available project components for the given project-key')
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with --issue-add-comment')
+    parser.add_argument("--filter-list-fav", action='store_true',
+                        help='list favourite filters')
+    parser.add_argument("--no-color", action='store_true',
+                        help='disable colorful output (default: %(default)s)')
     group_issue = parser.add_argument_group('issue')
+    #create
     group_issue.add_argument('-c', '--issue-create', nargs=5, metavar=('project-key', 'issue-type', 'summary', 'labels', 'components'),
                              help='create a new issue. "labels" can be a single label or a comma seperated list of labels. "components" can be a comma seperated list of components.')
+    #show and search
     group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
                         help='issue(s) to show')
+
     group_issue.add_argument('--issue-search', nargs='+', metavar='searchstring',
                              help='search for issues. searchstring is ie: assignee=CurrentUser() and status!="Closed"')
     group_issue.add_argument('--issue-search-by-filter', nargs='+', metavar='filter-id',
                              help='search for issues by filter-id.')
     group_issue.add_argument('--issue-desc', action='store_true',
-                        help='show issue description (default: %(default)s)')
+                             help='show issue description (default: %(default)s)')
     group_issue.add_argument('--issue-comments', action='store_true',
-                        help='show issue comment(s) (default: %(default)s)')
+                             help='show issue comment(s) (default: %(default)s)')
     group_issue.add_argument('--issue-oneline', action='store_true',
-                        help='show single line per issue (default: %(default)s)')
+                             help='show single line per issue (default: %(default)s)')
+    #comments
     group_issue.add_argument('--issue-comment-add', nargs=1, metavar='issue-key',
                              help='add a comment to given issue.')
 
     #labels
     group_issue.add_argument("--issue-label-add", nargs=2, metavar=('issue', 'label'),
-                        help='Add a label to the given issue')
+                             help='Add a label to the given issue')
     group_issue.add_argument("--issue-label-remove", nargs=2, metavar=('issue', 'label'),
-                        help='Remove a label from the given issue')
+                             help='Remove a label from the given issue')
 
     #components
     group_issue.add_argument("--issue-component-add", nargs=2, metavar=('issue', 'component'),
-                        help='Add a component to the given issue')
+                             help='Add a component to the given issue')
     group_issue.add_argument("--issue-component-remove", nargs=2, metavar=('issue', 'component'),
-                        help='Remove a component from the given issue')
+                             help='Remove a component from the given issue')
 
     #watchers
     group_issue.add_argument("--issue-watch-add", nargs='+', metavar='issue',
                              help='Add watch to the given issue(s)')
     group_issue.add_argument("--issue-watch-remove", nargs='+', metavar='issue',
                              help='Remove watch from the given issue(s)')
-    parser.add_argument("--filter-list-fav", action='store_true',
-                        help='list favourite filters')
-
-    parser.add_argument("--no-color", action='store_true',
-                        help='disable colorful output (default: %(default)s)')
     return vars(parser.parse_args())
 
 
