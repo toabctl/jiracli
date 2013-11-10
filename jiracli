@@ -257,11 +257,11 @@ def parse_args():
     group_issue.add_argument("--issue-component-remove", nargs=2, metavar=('issue', 'component'),
                         help='Remove a component from the given issue')
 
-    group_watch = parser.add_argument_group('watch')
-    group_watch.add_argument("--watch-add", nargs='+', metavar='issue',
-                        help='Add watch to the given issue(s)')
-    group_watch.add_argument("--watch-remove", nargs='+', metavar='issue',
-                        help='Remove watch from the given issue(s)')
+    #watchers
+    group_issue.add_argument("--issue-watch-add", nargs='+', metavar='issue',
+                             help='Add watch to the given issue(s)')
+    group_issue.add_argument("--issue-watch-remove", nargs='+', metavar='issue',
+                             help='Remove watch from the given issue(s)')
     parser.add_argument("--filter-list-fav", action='store_true',
                         help='list favourite filters')
 
@@ -343,17 +343,15 @@ if __name__ == "__main__":
 
 
     #add watch to issue(s)
-    if args['watch_add']:
-        for i in args['watch_add']:
+    if args['issue_watch_add']:
+        for i in args['issue_watch_add']:
             jira.add_watcher(i, conf['user'])
             log.debug("added watch for issue '%s'" % (i))
         sys.exit(0)
 
     #remove watch to issue(s)
-    if args['watch_remove']:
-        print(dir(jira))
-        sys.exit(0)
-        for i in args['watch_remove']:
+    if args['issue_watch_remove']:
+        for i in args['issue_watch_remove']:
             jira.remove_watcher(i, conf['user'])
             log.debug("removed watch for issue '%s'" % (i))
         sys.exit(0)

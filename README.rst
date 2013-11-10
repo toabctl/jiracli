@@ -84,8 +84,8 @@ Example: Add and remove issue watchers
 
 To get informed if something changed on an issue, there are watchers. The following commands add and remove a watch::
 
-  ./jiracli --watch-add PROJECT-1234
-  ./jiracli --watch-remove PROJECT-1234
+  ./jiracli --issue-watch-add PROJECT-1234
+  ./jiracli --issue-watch-remove PROJECT-1234
 
 Example: Add and remove labels
 ------------------------------
