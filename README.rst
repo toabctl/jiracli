@@ -110,8 +110,8 @@ Example: Add a comment to an issue
 ----------------------------------
 The following command open a text editor to insert the comment::
 
-  ./jiracli --issue-add-comment SMBCAP-3724
+  ./jiracli --issue-comment-add PROJECT-3724
 
 The short form is::
 
-  ./jiracli --issue-add-comment SMBCAP-3724 -m "another comment"
+  ./jiracli --issue-comment-add PROJECT-3724 -m "another comment"

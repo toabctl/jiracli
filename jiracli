@@ -236,14 +236,14 @@ def parse_args():
                              help='search for issues. searchstring is ie: assignee=CurrentUser() and status!="Closed"')
     group_issue.add_argument('--issue-search-by-filter', nargs='+', metavar='filter-id',
                              help='search for issues by filter-id.')
-    group_issue.add_argument('--issue-add-comment', nargs=1, metavar='issue-key',
-                             help='add a comment to given issue.')
     group_issue.add_argument('--issue-desc', action='store_true',
                         help='show issue description (default: %(default)s)')
     group_issue.add_argument('--issue-comments', action='store_true',
                         help='show issue comment(s) (default: %(default)s)')
     group_issue.add_argument('--issue-oneline', action='store_true',
                         help='show single line per issue (default: %(default)s)')
+    group_issue.add_argument('--issue-comment-add', nargs=1, metavar='issue-key',
+                             help='add a comment to given issue.')
 
     group_label = parser.add_argument_group('label')
     group_label.add_argument("--label-add", nargs=2, metavar=('issue', 'label'),
@@ -359,14 +359,14 @@ if __name__ == "__main__":
         sys.exit(0)
 
     #add comment to issue
-    if args['issue_add_comment']:
+    if args['issue_comment_add']:
         if args['message']:
             comment = args['message'][0]
         else:
-            comment = editor_get_text("-- your comment for issue %s" % (args['issue_add_comment'][0]))
-        issue = jira.issue(args['issue_add_comment'][0])
+            comment = editor_get_text("-- your comment for issue %s" % (args['issue_comment_add'][0]))
+        issue = jira.issue(args['issue_comment_add'][0])
         jira.add_comment(issue, comment)
-        log.debug("comment added to issue '%s'" % (args['issue_add_comment'][0]))
+        log.debug("comment added to issue '%s'" % (args['issue_comment_add'][0]))
         sys.exit(0)
 
     #print issue by filter search
