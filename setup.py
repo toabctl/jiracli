@@ -11,7 +11,7 @@ setup(
     packages = find_packages(),
     scripts = ['jiracli'],
     package_data = {
-        '': ['README.md', 'LICENSE'],
+        '': ['README.rst', 'LICENSE'],
     },
     install_requires = [
         'jira-python>=0.13',
