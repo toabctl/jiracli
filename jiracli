@@ -131,15 +131,15 @@ def issue_format(issue, show_desc=False, show_comments=False):
     if hasattr(issue.fields.assignee, 'name'):
         fields['assignee'] = issue.fields.assignee.name
     fields['updated'] = dtstr2dt(issue.fields.updated)
-    if hasattr(issue.fields, 'versions'):
+    if hasattr(issue.fields, 'versions') and len(issue.fields.fixVersions) > 0:
         fields['versions'] = ", ".join(map(lambda x: x.name, issue.fields.fixVersions))
-    if hasattr(issue.fields, 'components'):
+    if hasattr(issue.fields, 'components') and len(issue.fields.components) > 0:
         fields['components'] = ", ".join(map(lambda x: x.name, issue.fields.components))
-    if hasattr(issue.fields, 'labels'):
+    if hasattr(issue.fields, 'labels') and len(issue.fields.labels) > 0:
         fields['labels'] = ", ".join(map(lambda x: x, issue.fields.labels))
-    if hasattr(issue.fields, 'attachment'):
+    if hasattr(issue.fields, 'attachment') and len(issue.fields.attachment) > 0:
         fields['attachment'] = ", ".join(map(lambda x: x.filename, issue.fields.attachment))
-    if hasattr(issue.fields, 'issuelinks'):
+    if hasattr(issue.fields, 'issuelinks') and len(issue.fields.issuelinks) > 0:
         link_list = list()
         #inward issue: the issue to link from
         #outward issue: the issue to link to
@@ -154,6 +154,11 @@ def issue_format(issue, show_desc=False, show_comments=False):
             fields['comments'] = "%s\n%s" % (len(issue.fields.comment.comments), "\n\n".join(map(lambda x: "%s\n%s" % (colorfunc("%s, %s" % (dtstr2dt(x.updated), x.updateAuthor.name), None, attrs=['reverse']), x.body),  issue.fields.comment.comments)))
         else:
             fields['comments'] = "0"
+    else:
+        #show only the number of comments
+        if hasattr(issue.fields, 'comment') and len(issue.fields.comment.comments) > 0:
+            fields['comments'] = "%s" % (len(issue.fields.comment.comments))
+
 
     #print(dir(issue.fields))
     #add empty strings if field not available
