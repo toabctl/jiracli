@@ -275,6 +275,9 @@ def parse_args():
                              help='Add watch to the given issue(s)')
     group_issue.add_argument("--issue-watch-remove", nargs='+', metavar='issue',
                              help='Remove watch from the given issue(s)')
+    group_issue.add_argument("--issue-parent",
+                             help='Parent Issue Key of the Subtask. Required for Subtasks.')
+
     return vars(parser.parse_args())
 
 
@@ -397,6 +400,9 @@ if __name__ == "__main__":
 
         if len(args['issue_create'][4]) > 0:
             issue_dict['components'] = [ {'name': c} for c in args['issue_create'][4].split(',')]
+
+	if args['issue_parent']:
+            issue_dict['parent'] = { 'id': args['issue_parent'] }
 
         new_issue = jira.create_issue(fields=issue_dict)
         issue_list_print([new_issue], True, True, False)
