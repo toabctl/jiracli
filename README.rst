@@ -107,7 +107,7 @@ Now add and remove a component from the given list to an issue::
   ./jiracli --issue-component-remove PROJECT-1234 "COMP1"
 
 Example: Add and remove fix versions to issue
---------------------------------------------
+---------------------------------------------
 This is a simple task, similar to labels or components::
 
   ./jiracli --issue-fix-version-add PROJECT-3750 "My Fix version"
@@ -137,10 +137,10 @@ The layout of the file is pretty basic:
 
 Example::
 
-   As a DevOps I want to automate all daily duties via a RESTful API
-   * Collect requirments from all DevOps teams
-   * Design RESTful API draft
-   * Implement the API
+  As a DevOps I want to automate all daily duties via a RESTful API
+  * Collect requirments from all DevOps teams
+  * Design RESTful API draft
+  * Implement the API
 
 The following command creates multiple tickets with the summary from the given file::
 
