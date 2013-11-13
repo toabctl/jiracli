@@ -125,6 +125,8 @@ def issue_header(issue):
 def issue_format(issue, show_desc=False, show_comments=False):
     """return a dict with fields which describe the issue"""
     fields = OrderedDict()
+    if hasattr(issue.fields, "parent"):
+        fields['parent'] = "%s" % (issue.fields.parent.key)
     if show_desc:
         fields['description'] = "\n%s" % (issue.fields.description)
     fields['created'] = "%s, by %s" % (dtstr2dt(issue.fields.created), issue.fields.reporter.name)
