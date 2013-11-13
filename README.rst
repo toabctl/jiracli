@@ -106,6 +106,13 @@ Now add and remove a component from the given list to an issue::
   ./jiracli --issue-component-add PROJECT-1234 "COMP1"
   ./jiracli --issue-component-remove PROJECT-1234 "COMP1"
 
+Example: Add and remove fix versions to issue
+--------------------------------------------
+This is a simple task, similar to labels or components::
+
+  ./jiracli --issue-fix-version-add PROJECT-3750 "My Fix version"
+  ./jiracli --issue-fix-version-remove PROJECT-3750 "My Fix version"
+
 Example: Add a comment to an issue
 ----------------------------------
 The following command open a text editor to insert the comment::

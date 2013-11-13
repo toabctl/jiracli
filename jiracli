@@ -282,6 +282,12 @@ def parse_args():
                              help='Add watch to the given issue(s)')
     group_issue.add_argument("--issue-watch-remove", nargs='+', metavar='issue',
                              help='Remove watch from the given issue(s)')
+    #fix versions
+    group_issue.add_argument("--issue-fix-version-add", nargs='+', metavar='issue',
+                             help='Add fix version to the given issue(s)')
+    group_issue.add_argument("--issue-fix-version-remove", nargs='+', metavar='issue',
+                             help='Remove fix version from the given issue(s)')
+
     group_issue.add_argument("--issue-parent",
                              help='Parent Issue Key of the Subtask. Required for Subtasks.')
     return vars(parser.parse_args())
@@ -358,6 +364,21 @@ if __name__ == "__main__":
         issue.update(fields={"components" : components_new})
         sys.exit(0)
 
+    #add a fixVersion to an issue
+    if args['issue_fix_version_add']:
+        issue = jira.issue(args['issue_fix_version_add'][0])
+        fix_version_new = {'name': args['issue_fix_version_add'][1]}
+        fix_versions_available = [{'name': c.name} for c in issue.fields.fixVersions]
+        fix_versions_available.append(fix_version_new)
+        issue.update(fields={"fixVersions" : fix_versions_available})
+        sys.exit(0)
+
+    #remove fixVersion from an issue
+    if args['issue_fix_version_remove']:
+        issue = jira.issue(args['issue_fix_version_remove'][0])
+        fix_versions_new = [{'name': x.name} for x in filter(lambda x: x.name.lower() != args['issue_fix_version_remove'][1].lower(), issue.fields.fixVersions)]
+        issue.update(fields={"fixVersions" : fix_versions_new})
+        sys.exit(0)
 
     #add watch to issue(s)
     if args['issue_watch_add']:
