@@ -115,3 +115,31 @@ The following command open a text editor to insert the comment::
 The short form is::
 
   ./jiracli --issue-comment-add PROJECT-3724 -m "another comment"
+
+
+Example: Create multiple tickets in one shot
+--------------------------------------------
+With a simple plain text file filled with Issue summaries per line you can
+easily greate mulitple Issues and Sub-Tasks in one run.
+
+The layout of the file is pretty basic:
+
+ * each line represents an issue
+ * this line will be the summary of the issue
+ * issues starting with a `*` or `-` character will be a Sub-Task of the previous parent issue
+
+Example::
+
+   As a DevOps I want to automate all daily duties via a RESTful API
+   * Collect requirments from all DevOps teams
+   * Design RESTful API draft
+   * Implement the API
+
+The following command creates multiple tickets with the summary from the given file::
+
+  ./jiracli --issues-create PROJECT "User Story" "Sub-task" sprint22-stories.txt
+
+Appending Sub-Tasks or Child-Tickets from a file to an existing Issue with a given parent id::
+
+  ./jiracli --issue-parent PROJECT-3763 --issues-create PROJECT "User Story" "Sub-task" sprint22-stories.txt
+

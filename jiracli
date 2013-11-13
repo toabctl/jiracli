@@ -240,6 +240,11 @@ def parse_args():
     #create
     group_issue.add_argument('-c', '--issue-create', nargs=5, metavar=('project-key', 'issue-type', 'summary', 'labels', 'components'),
                              help='create a new issue. "labels" can be a single label or a comma seperated list of labels. "components" can be a comma seperated list of components.')
+
+    group_issue.add_argument('--issues-create', nargs=4, metavar=('project-key', 'parent-issue-type', 'child-issue-type', 'file'),
+                             help='Read Issue Summaries from a file. Each line is a summary.')
+
+
     #show and search
     group_issue.add_argument('-i', '--issue', nargs='+', metavar='issue',
                         help='issue(s) to show')
@@ -277,7 +282,6 @@ def parse_args():
                              help='Remove watch from the given issue(s)')
     group_issue.add_argument("--issue-parent",
                              help='Parent Issue Key of the Subtask. Required for Subtasks.')
-
     return vars(parser.parse_args())
 
 
@@ -407,6 +411,47 @@ if __name__ == "__main__":
         new_issue = jira.create_issue(fields=issue_dict)
         issue_list_print([new_issue], True, True, False)
         sys.exit(0)
+
+
+    #create multiple new issues
+    if args['issues_create']:
+
+        parent_id = None
+
+        if args['issue_parent']:
+            parent_id = args['issue_parent']
+
+        with open(args['issues_create'][3], "r") as f:
+           for n in f.readlines():
+                  is_subtask = False
+           
+                  if len(n) == 0:
+                      continue
+           
+                  #get description from text editor - for the parent ticket only!
+                  issue_dict = {
+                      'project': {'key': args['issues_create'][0]},
+                  }
+           
+                  if n.startswith("*") or n.startswith("-"):
+                     # this is a subtask
+                     issue_dict['parent'] = { 'id': parent_id }
+                     issue_dict['issuetype'] = {'name': args['issues_create'][2]}
+                     issue_dict['summary'] = n[1:]
+                     is_subtask = True
+                  else:
+                     issue_dict['issuetype'] = {'name': args['issues_create'][1]}
+                     issue_dict['summary'] = n
+           
+           
+                  new_issue = jira.create_issue(fields=issue_dict)
+                  issue_list_print([new_issue], True, True, False)
+                  if not is_subtask:
+                      parent_id = new_issue.key
+
+
+        sys.exit(0)
+
 
 
     #print issue search results
