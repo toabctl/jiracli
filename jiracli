@@ -175,7 +175,7 @@ def issue_list_print(issue_list, show_desc, show_comments, oneline):
     #disable color if oneline is used
     if oneline:
         global colorfunc
-        colorfunc = lambda *a,**k:str(a[0])
+        colorfunc = lambda *a,**k:a[0]
 
     for issue in issue_list:
         #issue header
