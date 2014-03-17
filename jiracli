@@ -208,7 +208,7 @@ def filter_list_print(filter_list):
         #fields to show for the filter
         fields = OrderedDict()
         fields['Url'] = f.viewUrl
-        fields['description'] = f.description
+        fields['description'] = getattr(f, 'description', '')
         fields['owner'] = f.owner.name
         fields['jql'] = f.jql
         #add empty strings if field not available
