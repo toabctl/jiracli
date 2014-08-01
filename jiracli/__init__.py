@@ -129,7 +129,8 @@ def issue_header(issue):
                                   attrs=['bold']))
 
 
-def issue_format(issue, show_desc=False, show_comments=False):
+def issue_format(issue, show_desc=False, show_comments=False,
+                 show_trans=False):
     """return a dict with fields which describe the issue"""
     fields = OrderedDict()
     if hasattr(issue.fields, "parent"):
@@ -178,6 +179,11 @@ def issue_format(issue, show_desc=False, show_comments=False):
            len(issue.fields.comment.comments) > 0:
             fields['comments'] = "%s" % (len(issue.fields.comment.comments))
 
+    if show_trans:
+        transitions = jira.transitions(issue)
+        fields['trans'] = ", ".join(map(
+            lambda x: x['name'] + "(" + x['id'] + ")", transitions))
+
     # print(dir(issue.fields))
     # add empty strings if field not available
     for k, v in fields.items():
@@ -186,7 +192,8 @@ def issue_format(issue, show_desc=False, show_comments=False):
     return fields
 
 
-def issue_list_print(issue_list, show_desc, show_comments, oneline):
+def issue_list_print(issue_list, show_desc, show_comments,
+                     show_trans, oneline):
     """print a list of issues"""
     # disable color if oneline is used
     if oneline:
@@ -201,7 +208,8 @@ def issue_list_print(issue_list, show_desc, show_comments, oneline):
         # issue description
         desc_fields = issue_format(issue,
                                    show_desc=show_desc,
-                                   show_comments=show_comments)
+                                   show_comments=show_comments,
+                                   show_trans=show_trans)
         print("\n".join(" : ".join((k.ljust(20), v))
                         for k, v in desc_fields.items()) + "\n")
 
@@ -215,7 +223,7 @@ def issue_search_result_print(searchstring_list):
         # get issues again.
         issues = [jira.issue(i.key) for i in issues]
         issue_list_print(issues, args['issue_desc'], args['issue_comments'],
-                         args['issue_oneline'])
+                         args['issue_trans'], args['issue_oneline'])
 
 
 def filter_list_print(filter_list):
@@ -295,6 +303,9 @@ def parse_args():
     group_issue.add_argument('--issue-comments', action='store_true',
                              help='show issue comment(s) '
                              '(default: %(default)s)')
+    group_issue.add_argument('--issue-trans', action='store_true',
+                             help='show possible issue transition(s)'
+                             '(default: %(default)s)')
     group_issue.add_argument('--issue-oneline', action='store_true',
                              help='show single line per issue '
                              '(default: %(default)s)')
@@ -318,7 +329,16 @@ def parse_args():
     group_issue.add_argument("--issue-component-remove", nargs=2,
                              metavar=('issue', 'component'),
                              help='Remove a component from the given issue')
-
+    # transitions
+    group_issue.add_argument("--issue-trans-open", nargs='+', metavar='issue',
+                             help='Move issue(s) to Open state')
+    group_issue.add_argument("--issue-trans-start", nargs='+', metavar='issue',
+                             help='Move issue(s) to Start Progress state')
+    group_issue.add_argument("--issue-trans-resolve", nargs='+',
+                             metavar='issue',
+                             help='Move issue(s) to Resolve Issue state')
+    group_issue.add_argument("--issue-trans-close", nargs='+', metavar='issue',
+                             help='Move issue(s) to Closed state')
     # watchers
     group_issue.add_argument("--issue-watch-add", nargs='+', metavar='issue',
                              help='Add watch to the given issue(s)')
@@ -440,6 +460,29 @@ def main():
         issue.update(fields={"fixVersions": fix_versions_new})
         sys.exit(0)
 
+    # move issue(s) to Open state
+    if args['issue_trans_open']:
+        for i in args['issue_trans_open']:
+            jira.transition_issue(i, 3)
+            log.debug("moved to open : issue '%s'" % (i))
+        sys.exit(0)
+
+    # move issue(s) to Start Progress state
+    if args['issue_trans_start']:
+        for i in args['issue_trans_start']:
+            jira.transition_issue(i, 4)
+            log.debug("moved to progress : issue '%s'" % (i))
+        sys.exit(0)
+
+    # move issue(s) to Start Resolved state
+    if args['issue_trans_resolve']:
+        for i in args['issue_trans_resolve']:
+            # jira.transition_issue(i, 5, assignee={'name': conf['user']},
+            # resolution={'id': '1'})
+            jira.transition_issue(i, 5, resolution={'id': '1'})
+            log.debug("moved to progress : issue '%s'" % (i))
+        sys.exit(0)
+
     # add watch to issue(s)
     if args['issue_watch_add']:
         for i in args['issue_watch_add']:
@@ -551,7 +594,7 @@ def main():
         issues = [jira.issue(i) for i in args['issue']]
         issue_list_print(
             issues, args['issue_desc'], args['issue_comments'],
-            args['issue_oneline'])
+            args['issue_trans'], args['issue_oneline'])
         sys.exit(0)
 
 
