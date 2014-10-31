@@ -1,38 +1,23 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-from setuptools import setup, find_packages
-import os
+#
+# Copyright 2014 Thomas Bechtold <thomasbechtold@jpberlin.de>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-with open(os.path.join(os.path.dirname(__file__), "README.rst"), "r") as f:
-    long_desc = "".join(f.readlines())
+import setuptools
 
-setup(
-    name = "jiracli",
-    version = "0.4.1",
-    packages = find_packages(),
-    scripts = ['jiracli'],
-    package_data = {
-        '': ['README.rst', 'LICENSE'],
-    },
-    install_requires = [
-        'jira-python>=0.13',
-        'termcolor',
-        'setuptools',
-    ],
-    author = "Thomas Bechtold",
-    author_email = "thomasbechtold@jpberlin.de",
-    description = "command line interface for jira",
-    long_description=long_desc,
-    license = "GPL-3",
-    keywords = "jira cli atlassian REST",
-    url = "https://github.com/toabctl/jiracli",
-
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Environment :: Console",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-        "Programming Language :: Python",
-        "License :: OSI Approved :: BSD License",
-        "Topic :: Software Development :: Bug Tracking",
-        "Topic :: Utilities",
-    ],
-)
+setuptools.setup(
+    setup_requires=['pbr'],
+    pbr=True)

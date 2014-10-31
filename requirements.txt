@@ -1,0 +1,4 @@
+# pbr should be first
+pbr>=0.6
+jira-python>=0.13
+termcolor
