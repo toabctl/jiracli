@@ -339,7 +339,7 @@ def parse_args():
     return vars(parser.parse_args())
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
     setup_logging(args['debug'])
     conf = config_get()
@@ -553,3 +553,7 @@ if __name__ == "__main__":
             issues, args['issue_desc'], args['issue_comments'],
             args['issue_oneline'])
         sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
