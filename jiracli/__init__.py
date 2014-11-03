@@ -31,21 +31,19 @@ from jira.client import JIRA
 import tempfile
 
 # log object
-log = None
+log = logging.getLogger('jiracli')
 # path to the user configuration file
 user_config_path = os.path.expanduser('~/.jiracli.ini')
 
 
-def setup_logging(debug):
-    global log
-    log = logging.getLogger('jiracli')
+def setup_logging(logger, debug):
     sh = logging.StreamHandler()
     if debug:
-        log.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
         sh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(levelname)s - %(message)s')
     sh.setFormatter(formatter)
-    log.addHandler(sh)
+    logger.addHandler(sh)
 
 
 def editor_get_text(text_template):
@@ -361,7 +359,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    setup_logging(args['debug'])
+    setup_logging(log, args['debug'])
     conf = config_get()
     jira = jira_obj_get(conf)
 
