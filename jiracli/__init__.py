@@ -35,6 +35,12 @@ log = None
 # path to the user configuration file
 user_config_path = os.path.expanduser('~/.jiracli.ini')
 
+# Force utf8 encoding for output if not defined (useful for piping)
+if sys.stdout.encoding is None:
+    import codecs
+    writer = codecs.getwriter("utf-8")
+    sys.stdout = writer(sys.stdout)
+
 
 def setup_logging(debug):
     global log
