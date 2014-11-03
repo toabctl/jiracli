@@ -79,11 +79,10 @@ def config_get():
         conf.set(section_name, "url", url)
         with open(user_config_path, 'w') as f:
             conf.write(f)
-            log.info("username and password written to '{0}'".format(
-                user_config_path))
+            log.info("username and password written to %s", user_config_path)
     else:
-        log.debug("{0} section already available in '{1}'".format(
-            section_name, user_config_path))
+        log.debug("%s section already available in %s", section_name,
+                  user_config_path)
     return dict(conf.items(section_name))
 
 
@@ -462,14 +461,14 @@ def main():
     if args['issue_trans_open']:
         for i in args['issue_trans_open']:
             jira.transition_issue(i, 3)
-            log.debug("moved to open : issue '%s'" % (i))
+            log.debug("moved to open : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Progress state
     if args['issue_trans_start']:
         for i in args['issue_trans_start']:
             jira.transition_issue(i, 4)
-            log.debug("moved to progress : issue '%s'" % (i))
+            log.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Resolved state
@@ -478,21 +477,21 @@ def main():
             # jira.transition_issue(i, 5, assignee={'name': conf['user']},
             # resolution={'id': '1'})
             jira.transition_issue(i, 5, resolution={'id': '1'})
-            log.debug("moved to progress : issue '%s'" % (i))
+            log.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
 
     # add watch to issue(s)
     if args['issue_watch_add']:
         for i in args['issue_watch_add']:
             jira.add_watcher(i, conf['user'])
-            log.debug("added watch for issue '%s'" % (i))
+            log.debug("added watch for issue '%s'", i)
         sys.exit(0)
 
     # remove watch to issue(s)
     if args['issue_watch_remove']:
         for i in args['issue_watch_remove']:
             jira.remove_watcher(i, conf['user'])
-            log.debug("removed watch for issue '%s'" % (i))
+            log.debug("removed watch for issue '%s'", i)
         sys.exit(0)
 
     # add comment to issue
@@ -505,9 +504,7 @@ def main():
                 (args['issue_comment_add'][0]))
         issue = jira.issue(args['issue_comment_add'][0])
         jira.add_comment(issue, comment)
-        log.debug(
-            "comment added to issue '%s'" %
-            (args['issue_comment_add'][0]))
+        log.debug("comment added to issue '%s'", args['issue_comment_add'][0])
         sys.exit(0)
 
     # print issue by filter search
