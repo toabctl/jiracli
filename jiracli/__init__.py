@@ -36,6 +36,7 @@ log = None
 # path to the user configuration file
 user_config_path = os.path.expanduser('~/.jiracli.ini')
 
+
 # http://stackoverflow.com/questions/566746/how-to-get-console-window-width-in-python
 def get_term_size():
     env = os.environ
