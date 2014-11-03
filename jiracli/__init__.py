@@ -25,6 +25,7 @@ import ConfigParser
 import logging
 import getpass
 import datetime
+import tabulate
 from collections import OrderedDict
 from termcolor import colored as colorfunc
 from jira.client import JIRA
@@ -226,6 +227,31 @@ def issue_search_result_print(searchstring_list):
                          args['issue_trans'], args['issue_oneline'])
 
 
+def sprint(jira, project):
+    issues = jira.search_issues('project = "%s" AND sprint IN openSprints()' %
+                                project)
+    width, height = get_term_size()
+
+    content = []
+    sizes = [0, 0, 0]
+    for issue in issues:
+        content.append([issue.key,
+                        issue.fields.status.name,
+                        issue.fields.assignee.name if issue.fields.assignee
+                        else "Nobody",
+                        issue.fields.summary])
+        for i in range(3):
+            if sizes[i] < len(content[-1][i]):
+                sizes[i] = len(content[-1][i])
+    summary_width = width - sum(sizes) - 7
+    for line in content:
+        line[-1] = line[-1][:summary_width]
+
+    print(tabulate.tabulate(content,
+                            headers=['issue', 'status',
+                                     'assignee', 'summary']))
+
+
 def filter_list_print(filter_list):
     """print a list of filters"""
     for f in filter_list:
@@ -309,6 +335,11 @@ def parse_args():
     group_issue.add_argument('--issue-oneline', action='store_true',
                              help='show single line per issue '
                              '(default: %(default)s)')
+
+    # show open sprint for project
+    group_issue.add_argument('--sprint', nargs=1, metavar='project',
+                             help='show open sprint  for project.')
+
     # comments
     group_issue.add_argument('--issue-comment-add', nargs=1,
                              metavar='issue-key',
@@ -587,6 +618,10 @@ def main():
     # print issue search results
     if args['issue_search']:
         issue_search_result_print(args['issue_search'])
+        sys.exit(0)
+
+    if args['sprint']:
+        sprint(jira, args['sprint'][0])
         sys.exit(0)
 
     # print issue(s) and exit
