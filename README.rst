@@ -153,3 +153,13 @@ Appending Sub-Tasks or Child-Tickets from a file to an existing Issue with a giv
 
   ./jiracli --issue-parent PROJECT-3763 --issues-create PROJECT "User Story" "Sub-task" sprint22-stories.txt
 
+Example: Show ongoing sprint for a project
+------------------------------------------
+The following command will show you the current ongoing sprint of a project::
+
+  ./jiracli --sprint MYPROJECT
+  issue    status          assignee    summary
+  -------  --------------  ----------  -------------------------------------------
+  RD-1547  In Progress     user_owner  Bug on main screen of MyLittlePoney Project
+  RD-1517  Refused         Nobody      Please add a green poney
+  RD-1516  Resolved        user_x      My poney is not pink enough
