@@ -29,7 +29,7 @@ import subprocess
 import tabulate
 from collections import OrderedDict
 from termcolor import colored as colorfunc
-from jira.client import JIRA
+from jira import JIRA
 import tempfile
 
 # log object
@@ -396,9 +396,11 @@ def parse_args():
 
 
 def main():
+    global args
     args = parse_args()
     setup_logging(log, args['debug'])
     conf = config_get()
+    global jira
     jira = jira_obj_get(conf)
 
     # use colorful output?

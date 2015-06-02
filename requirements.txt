@@ -1,5 +1,5 @@
 # pbr should be first
 pbr>=0.6
-jira-python>=0.13
+jira>=0.47
 tabulate
 termcolor
