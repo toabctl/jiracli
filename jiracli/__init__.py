@@ -405,6 +405,7 @@ def main():
 
     # use colorful output?
     if args['no_color']:
+        global colorfunc
         colorfunc = lambda *a, **k: str(a[0])
 
     # print issue link types
