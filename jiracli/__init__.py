@@ -202,7 +202,7 @@ def issue_format(issue, show_desc=False, show_comments=False,
         if hasattr(issue.fields, 'comment'):
             fields['comments'] = "%s\n%s" % (
                 len(issue.fields.comment.comments),
-                "\n\n".join(map(lambda x: "%s\n%s" % (colorfunc("%s, %s" % (dtstr2dt(x.updated), x.updateAuthor.name), None, attrs=['reverse']), x.body),  issue.fields.comment.comments)))  # noqa
+                "\n\n".join(map(lambda x: "%s\n%s" % (colorfunc("%s, %s" % (dtstr2dt(x.updated), x.updateAuthor.name), None, attrs=['reverse']), x.body), issue.fields.comment.comments)))  # noqa
         else:
             fields['comments'] = "0"
     else:

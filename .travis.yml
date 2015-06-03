@@ -7,4 +7,4 @@ python:
 install:
   - pip install pep8
 script:
-  - pep8 -v jiracli
+  - pep8 --ignore=E731 -v jiracli
