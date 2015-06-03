@@ -161,7 +161,7 @@ def issue_header(issue):
                                   attrs=['bold']))
 
 
-def issue_format(issue, show_desc=False, show_comments=False,
+def issue_format(jira_obj, issue, show_desc=False, show_comments=False,
                  show_trans=False):
     """return a dict with fields which describe the issue"""
     fields = OrderedDict()
@@ -224,7 +224,7 @@ def issue_format(issue, show_desc=False, show_comments=False,
     return fields
 
 
-def issue_list_print(issue_list, show_desc, show_comments,
+def issue_list_print(jira_obj, issue_list, show_desc, show_comments,
                      show_trans, oneline):
     """print a list of issues"""
     # disable color if oneline is used
@@ -238,7 +238,7 @@ def issue_list_print(issue_list, show_desc, show_comments,
         if oneline:
             continue
         # issue description
-        desc_fields = issue_format(issue,
+        desc_fields = issue_format(jira_obj, issue,
                                    show_desc=show_desc,
                                    show_comments=show_comments,
                                    show_trans=show_trans)
@@ -246,7 +246,7 @@ def issue_list_print(issue_list, show_desc, show_comments,
                         for k, v in desc_fields.items()) + "\n")
 
 
-def issue_search_result_print(searchstring_list):
+def issue_search_result_print(jira_obj, args, searchstring_list):
     """print issues for the given search string(s)"""
     for searchstr in searchstring_list:
         issues = jira_obj.search_issues(searchstr)
@@ -254,8 +254,9 @@ def issue_search_result_print(searchstring_list):
         # if I use jira_obj.search_issues()
         # get issues again.
         issues = [jira_obj.issue(i.key) for i in issues]
-        issue_list_print(issues, args['issue_desc'], args['issue_comments'],
-                         args['issue_trans'], args['issue_oneline'])
+        issue_list_print(jira_obj, issues, args['issue_desc'],
+                         args['issue_comments'], args['issue_trans'],
+                         args['issue_oneline'])
 
 
 def filter_list_print(filter_list):
@@ -551,7 +552,7 @@ def main():
     if args['issue_search_by_filter']:
         searchstring_list = [
             jira_obj.filter(f).jql for f in args['issue_search_by_filter']]
-        issue_search_result_print(searchstring_list)
+        issue_search_result_print(jira_obj, args, searchstring_list)
         sys.exit(0)
 
     # create a new issue
@@ -576,7 +577,7 @@ def main():
             issue_dict['parent'] = {'id': args['issue_parent']}
 
         new_issue = jira_obj.create_issue(fields=issue_dict)
-        issue_list_print([new_issue], True, True, False)
+        issue_list_print(jira_obj, [new_issue], True, True, False)
         sys.exit(0)
 
     # create multiple new issues from file
@@ -613,7 +614,7 @@ def main():
 
                 # create and print the new issue
                 new_issue = jira_obj.create_issue(fields=issue_dict)
-                issue_list_print([new_issue], True, True, False)
+                issue_list_print(jira_obj, [new_issue], True, True, False)
                 if not is_subtask:
                     parent_id = new_issue.key
 
@@ -621,7 +622,7 @@ def main():
 
     # print issue search results
     if args['issue_search']:
-        issue_search_result_print(args['issue_search'])
+        issue_search_result_print(jira_obj, args, args['issue_search'])
         sys.exit(0)
 
     if args['sprint']:
@@ -632,6 +633,7 @@ def main():
     if args['issue']:
         issues = [jira_obj.issue(i) for i in args['issue']]
         issue_list_print(
+            jira_obj,
             issues, args['issue_desc'], args['issue_comments'],
             args['issue_trans'], args['issue_oneline'])
         sys.exit(0)
