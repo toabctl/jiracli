@@ -246,7 +246,7 @@ def issue_list_print(issue_list, show_desc, show_comments,
                         for k, v in desc_fields.items()) + "\n")
 
 
-def issue_search_result_print(searchstring_list):
+def issue_search_result_print(jira_obj, args, searchstring_list):
     """print issues for the given search string(s)"""
     for searchstr in searchstring_list:
         issues = jira_obj.search_issues(searchstr)
@@ -551,7 +551,7 @@ def main():
     if args['issue_search_by_filter']:
         searchstring_list = [
             jira_obj.filter(f).jql for f in args['issue_search_by_filter']]
-        issue_search_result_print(searchstring_list)
+        issue_search_result_print(jira_obj, args, searchstring_list)
         sys.exit(0)
 
     # create a new issue
@@ -621,7 +621,7 @@ def main():
 
     # print issue search results
     if args['issue_search']:
-        issue_search_result_print(args['issue_search'])
+        issue_search_result_print(jira_obj, args, args['issue_search'])
         sys.exit(0)
 
     if args['sprint']:
