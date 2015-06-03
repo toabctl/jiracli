@@ -3,11 +3,11 @@ Jira command line interface
 .. image:: https://travis-ci.org/toabctl/jiracli.svg
     :target: https://travis-ci.org/toabctl/jiracli
 
-`jiracli` is a simple command line interface based on the `jira-python` module. The module uses the REST API to communicate with the Jira instance.
+`jiracli` is a simple command line interface based on the `jira` module. The module uses the REST API to communicate with the Jira instance.
 
 Installation
 ============
-`python2.7` and `jira-python` from https://pypi.python.org/pypi/jira-python/ is needed.
+`python2.7` and `jira` from https://pypi.python.org/pypi/jira/ is needed.
 
  * You can install `jiracli` with pip in a virtual environment::
 
