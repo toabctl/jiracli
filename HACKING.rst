@@ -9,5 +9,6 @@ Some steps howto release an new version.
     git push --tags
 * Upload to pypi::
 
-    Post release version bump to 0.4.2
+    python setup.py sdist bdist_wheel upload
+
 * Do post release version bump in `setup.cfg` and push it
