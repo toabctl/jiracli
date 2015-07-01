@@ -151,12 +151,17 @@ def issue_status_color(status):
 
 def issue_header(issue):
     """get a single line string for an issue"""
+    if hasattr(issue.fields, "priority"):
+        priority = "%s" % issue.fields.priority.name
+    else:
+        priority = "n/a"
+
     return "%s (%s)" % (colorfunc("%s, %s: %s" % (issue.key,
                                                   issue.fields.issuetype.name,
                                                   issue.fields.summary),
                                   None, attrs=['bold', 'underline']),
                         colorfunc("%s, %s" % (issue.fields.status.name,
-                                              issue.fields.priority.name),
+                                              priority),
                                   issue_status_color(issue.fields.status.name),
                                   attrs=['bold']))
 
