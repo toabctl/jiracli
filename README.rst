@@ -78,7 +78,7 @@ Example: Searching with jql
 
 Useing the Jira query language to search is simple::
 
-  ./jiracli --issue-search "assignee=CurrentUser() and status='Closed'" --issue-comment
+  ./jiracli --issue-search "assignee=CurrentUser() and status='Closed'" --issue-comments
 
 This command searches for all closed issues of the currently logged in user. The command also prints the comments for every issue.
 
