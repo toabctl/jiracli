@@ -583,7 +583,7 @@ def main():
             issue_dict['parent'] = {'id': args['issue_parent']}
 
         new_issue = jira_obj.create_issue(fields=issue_dict)
-        issue_list_print(jira_obj, [new_issue], True, True, False)
+        issue_list_print(jira_obj, [new_issue], True, True, False, False)
         sys.exit(0)
 
     # create multiple new issues from file
