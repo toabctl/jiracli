@@ -620,7 +620,8 @@ def main():
 
                 # create and print the new issue
                 new_issue = jira_obj.create_issue(fields=issue_dict)
-                issue_list_print(jira_obj, [new_issue], True, True, False)
+                issue_list_print(jira_obj, [new_issue],
+                                 True, True, False, False)
                 if not is_subtask:
                     parent_id = new_issue.key
 
