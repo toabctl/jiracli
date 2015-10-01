@@ -303,7 +303,7 @@ def parse_args():
                         'roject-key')
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with '
-                        '--issue-add-comment')
+                        '--issue-comment-add')
     parser.add_argument("--filter-list-fav", action='store_true',
                         help='list favourite filters')
     parser.add_argument("--no-color", action='store_true',
