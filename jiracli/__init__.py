@@ -86,7 +86,7 @@ def config_credentials_get():
 def sprint(jira_obj, project):
     issues = jira_obj.search_issues(
         'project = "%s" AND sprint IN openSprints()' % project)
-    width, height = [
+    height, width = [
         int(v) for v in
         subprocess.check_output(["stty", "size"]).strip().split()]
 
