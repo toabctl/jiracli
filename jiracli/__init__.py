@@ -56,11 +56,12 @@ def setup_logging(logger, debug):
 
 
 def file_get_text(fname):
-    """get text from an a provided filename"""
-    tf = open(fname,'r')
+    # get text from an a provided filename
+    tf = open(fname, 'r')
     tf.seek(0)
     return "\n".join([line for line in tf.read().split('\n')
                       if not line.startswith("--")])
+
 
 def editor_get_text(text_template):
     """get text from an editor via a tempfile"""
@@ -86,7 +87,7 @@ def config_credentials_get():
 def sprint(jira_obj, project):
     issues = jira_obj.search_issues(
         'project = "%s" AND sprint IN openSprints()' % project)
-    height, width = [
+    width, height = [
         int(v) for v in
         subprocess.check_output(["stty", "size"]).strip().split()]
 
@@ -312,7 +313,8 @@ def parse_args():
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with '
                         '--issue-add-comment')
-    parser.add_argument("-mf", "--message-file", nargs=1, metavar='message_file',
+    parser.add_argument("-mf", "--message-file", nargs=1,
+                        metavar='message_file',
                         help='a message. can be supplied via a file  with '
                         '--issue-comment-add')
     parser.add_argument("--filter-list-fav", action='store_true',
@@ -669,5 +671,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
