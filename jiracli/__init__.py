@@ -589,7 +589,7 @@ def main():
         new_issue = jira_obj.create_issue(fields=issue_dict)
 
         if len(assignee) > 0:
-            new_issue.update(assignee={'name': 'gstimac'})
+            new_issue.update(assignee={'name': assignee})
 
         issue_list_print(jira_obj, [new_issue], True, True, False, False)
         sys.exit(0)
