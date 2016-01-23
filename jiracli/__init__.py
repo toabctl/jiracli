@@ -19,9 +19,10 @@
 from __future__ import print_function
 
 import os
+import six
 import sys
 import argparse
-import ConfigParser
+from six.moves import configparser as ConfigParser
 import logging
 import getpass
 import datetime
