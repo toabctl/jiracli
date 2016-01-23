@@ -104,7 +104,7 @@ def sprint(jira_obj, project):
 
 
 def config_get():
-    conf = ConfigParser.SafeConfigParser()
+    conf = ConfigParser.RawConfigParser()
     conf.read([user_config_path])
     section_name = "defaults"
     if not conf.has_section(section_name):
