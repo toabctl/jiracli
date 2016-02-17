@@ -63,9 +63,10 @@ def editor_get_text(text_template):
     tf.flush()
     editor = os.environ.setdefault("EDITOR", "vim")
     os.system("%s %s" % (editor, tf.name))
-    tf.seek(0)
-    return "\n".join([line for line in tf.read().split('\n')
-                      if not line.startswith("--")])
+    rdr = open(tf.name, 'r')
+    rdr.seek(0)
+    return "".join([line for line in rdr.readlines()
+                    if not line.startswith("--")])
 
 
 def config_credentials_get():
