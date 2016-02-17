@@ -173,6 +173,12 @@ The following command will show you the current ongoing sprint of a project::
   RD-1517  Refused         Nobody      Please add a green poney
   RD-1516  Resolved        user_x      My poney is not pink enough
 
+Example: Assign an issue
+------------------------
+The following command will assign an issue to a given user::
+
+  ./jiracli --issue-assign DOCUMENT-628 t.bechtold
+
 
 Contributing
 ============

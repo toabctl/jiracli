@@ -406,6 +406,10 @@ def parse_args():
     group_issue.add_argument("--issue-watch-remove", nargs='+',
                              metavar='issue',
                              help='Remove watch from the given issue(s)')
+    # assignee
+    group_issue.add_argument("--issue-assign", nargs=2,
+                             metavar=('issue', 'assignee'),
+                             help='Assign the issue to the specified user')
     # fix versions
     group_issue.add_argument("--issue-fix-version-add", nargs='+',
                              metavar='issue',
@@ -537,6 +541,8 @@ def main():
     # move issue(s) to Start Progress state
     if args['issue_trans_start']:
         for i in args['issue_trans_start']:
+            # if somebody starts to work on an issue, assign it also
+            jira_obj.assign_issue(i, conf.get('defaults', 'user'))
             jira_obj.transition_issue(i, 4)
             log.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
@@ -569,6 +575,12 @@ def main():
         for i in args['issue_watch_remove']:
             jira_obj.remove_watcher(i, conf.get('defaults', 'user'))
             log.debug("removed watch for issue '%s'", i)
+        sys.exit(0)
+
+    # assign the issue
+    if args['issue_assign']:
+        issue, assignee = args['issue_assign']
+        jira_obj.assign_issue(issue, assignee)
         sys.exit(0)
 
     # add comment to issue
