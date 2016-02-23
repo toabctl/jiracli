@@ -23,6 +23,7 @@ import six
 import sys
 import argparse
 from six.moves import configparser as ConfigParser
+from six.moves import input
 import logging
 import getpass
 import datetime
@@ -70,9 +71,9 @@ def editor_get_text(text_template):
 
 def config_credentials_get():
     # get username, password and url
-    user = raw_input("username:")
+    user = input("username:")
     password = getpass.getpass()
-    url = raw_input("url:")
+    url = input("url:")
     return user, password, url
 
 
