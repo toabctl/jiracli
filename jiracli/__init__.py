@@ -312,8 +312,8 @@ def parse_args():
                         help='disable colorful output (default: %(default)s)')
     group_issue = parser.add_argument_group('issue')
     # create
-    group_issue.add_argument('-c', '--issue-create', nargs=5,
-                             metavar=('project-key', 'issue-type',
+    group_issue.add_argument('-c', '--issue-create', nargs=6,
+                             metavar=('project-key', 'issue-type', 'epic-link',
                                       'summary', 'labels', 'components'),
                              help='create a new issue. "labels" can be a '
                              'single label or a comma seperated list of '
@@ -570,14 +570,14 @@ def main():
         issue_dict = {
             'project': {'key': args['issue_create'][0]},
             'issuetype': {'name': args['issue_create'][1]},
-            'summary': args['issue_create'][2],
+            'summary': args['issue_create'][3],
             'description': desc,
         }
 
-        if len(args['issue_create'][3]) > 0:
+        if len(args['issue_create'][4]) > 0:
             issue_dict['labels'] = args['issue_create'][3].split(',')
 
-        if len(args['issue_create'][4]) > 0:
+        if len(args['issue_create'][5]) > 0:
             issue_dict['components'] = [
                 {'name': c} for c in args['issue_create'][4].split(',')]
 
@@ -585,6 +585,10 @@ def main():
             issue_dict['parent'] = {'id': args['issue_parent']}
 
         new_issue = jira_obj.create_issue(fields=issue_dict)
+        # Then assign it to an epic
+        if len(args['issue_create'][2]) > 0:
+            jira_obj.add_issues_to_epic(epic_id=args['issue_create'][2],
+                                        issue_keys=[new_issue.key])
         issue_list_print(jira_obj, [new_issue], True, True, False, False)
         sys.exit(0)
 
