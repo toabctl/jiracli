@@ -58,7 +58,7 @@ def setup_logging(logger, debug):
 
 def editor_get_text(text_template):
     """get text from an editor via a tempfile"""
-    tf = tempfile.NamedTemporaryFile()
+    tf = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
     tf.write("-- lines starting with '--' will be ignored\n")
     tf.write(text_template)
     tf.flush()
