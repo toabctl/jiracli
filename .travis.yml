@@ -2,9 +2,10 @@
 sudo: false
 
 language: python
-python:
-  - "2.7"
+python: "2.7"
+env:
+  - TOX_ENV=pep8
 install:
-  - pip install pep8
+  - pip install tox
 script:
-  - pep8 --ignore=E731 -v jiracli
+  - tox -e $TOX_ENV

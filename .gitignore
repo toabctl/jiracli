@@ -4,3 +4,4 @@ jiracli.egg-info/
 build
 AUTHORS
 ChangeLog
+.tox
