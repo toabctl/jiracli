@@ -163,3 +163,17 @@ The following command will show you the current ongoing sprint of a project::
   RD-1547  In Progress     user_owner  Bug on main screen of MyLittlePoney Project
   RD-1517  Refused         Nobody      Please add a green poney
   RD-1516  Resolved        user_x      My poney is not pink enough
+
+
+Contributing
+============
+`jiracli` is hosted on `github`_ . Please send pull requests or create
+issus there.
+
+Testing
+-------
+tox is used for testing. To execute i.e. the pep8 style checks, run::
+
+  tox -epep8
+
+.. _github: https://github.com/toabctl/jiracli
