@@ -103,9 +103,9 @@ def sprint(jira_obj, project):
                                      'assignee', 'summary']))
 
 
-def config_get():
+def config_get(config_path):
     conf = ConfigParser.RawConfigParser()
-    conf.read([user_config_path])
+    conf.read([config_path])
     section_name = "defaults"
     if not conf.has_section(section_name):
         user, password, url = config_credentials_get()
@@ -113,12 +113,13 @@ def config_get():
         conf.set(section_name, "user", user)
         conf.set(section_name, "password", password)
         conf.set(section_name, "url", url)
-        with open(user_config_path, 'w') as f:
+        with os.fdopen(os.open(
+                config_path, os.O_WRONLY | os.O_CREAT, 0o600), 'w') as f:
             conf.write(f)
-            log.info("username and password written to %s", user_config_path)
+            log.info("username and password written to %s", config_path)
     else:
         log.debug("%s section already available in %s", section_name,
-                  user_config_path)
+                  config_path)
     return dict(conf.items(section_name))
 
 
@@ -406,7 +407,7 @@ def parse_args():
 def main():
     args = parse_args()
     setup_logging(log, args['debug'])
-    conf = config_get()
+    conf = config_get(user_config_path)
     jira_obj = jira_obj_get(conf)
 
     # use colorful output?
