@@ -19,6 +19,7 @@
 from __future__ import print_function
 
 import os
+import os.path
 import sys
 import argparse
 from six.moves import configparser as ConfigParser
@@ -55,6 +56,14 @@ def setup_logging(logger, debug):
     logger.addHandler(sh)
 
 
+def file_get_text(fname):
+    # get text from an a provided filename
+    tf = open(fname, 'r')
+    tf.seek(0)
+    return "\n".join([line for line in tf.read().split('\n')
+                      if not line.startswith("--")])
+
+
 def editor_get_text(text_template):
     """get text from an editor via a tempfile"""
     tf = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
@@ -79,7 +88,7 @@ def config_credentials_get():
 def sprint(jira_obj, project):
     issues = jira_obj.search_issues(
         'project = "%s" AND sprint IN openSprints()' % project)
-    height, width = [
+    width, height = [
         int(v) for v in
         subprocess.check_output(["stty", "size"]).strip().split()]
 
@@ -306,6 +315,10 @@ def parse_args():
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with '
                         '--issue-add-comment')
+    parser.add_argument("-mf", "--message-file", nargs=1,
+                        metavar='message_file',
+                        help='a message. can be supplied via a file  with '
+                        '--issue-comment-add')
     parser.add_argument("--filter-list-fav", action='store_true',
                         help='list favourite filters')
     parser.add_argument("--no-color", action='store_true',
@@ -547,10 +560,21 @@ def main():
     if args['issue_comment_add']:
         if args['message']:
             comment = args['message'][0]
+            print(comment)
+        elif args['message_file']:
+            fname = args['message_file'][0]
+            if os.path.isfile(fname) and os.access(fname, os.R_OK):
+                print("File exists and is readable")
+                comment = file_get_text(fname)
+                print(comment)
+            else:
+                print("Either file is missing or is not readable")
+
         else:
             comment = editor_get_text(
                 "-- your comment for issue %s" %
                 (args['issue_comment_add'][0]))
+            print(comment)
         issue = jira_obj.issue(args['issue_comment_add'][0])
         jira_obj.add_comment(issue, comment)
         log.debug("comment added to issue '%s'", args['issue_comment_add'][0])
