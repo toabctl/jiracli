@@ -48,7 +48,7 @@ class BaseTest(unittest.TestCase):
         tmpdir = tempfile.mkdtemp(prefix='jiracli-tmp_')
         conf = os.path.join(tmpdir, 'jiracli.conf')
         try:
-            user, pw, url = jiracli.config_get(conf)
+            jiracli.config_get(conf)
             # file was created
             assert os.path.exists(conf) is True
             # file has correct permissions

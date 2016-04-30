@@ -122,14 +122,23 @@ def config_get(config_path):
     else:
         log.debug("%s section already available in %s", section_name,
                   config_path)
-    return dict(conf.items(section_name))
+
+    # some optional configuration options
+    if not conf.has_option(section_name, "verify"):
+        conf.set(section_name, "verify", "true")
+
+    return conf
 
 
 def jira_obj_get(conf):
+    verify = conf.getboolean('defaults', 'verify')
+
     options = {
-        'server': conf['url'],
+        'server': conf.get('defaults', 'url'),
+        'verify': verify,
     }
-    return JIRA(options, basic_auth=(conf['user'], conf['password']))
+    return JIRA(options, basic_auth=(conf.get('defaults', 'user'),
+                                     conf.get('defaults', 'password')))
 
 
 def dtstr2dt(dtstr):
@@ -295,6 +304,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         help='print debug information (default: %(default)s)')
+    parser.add_argument("--no-verify", action='store_true',
+                        help='do not verify the ssl certificate')
     parser.add_argument("--issue-type-list", action='store_true',
                         help='list available issue types')
     parser.add_argument("--issue-link-types-list", action='store_true',
@@ -413,6 +424,11 @@ def main():
     args = parse_args()
     setup_logging(log, args['debug'])
     conf = config_get(user_config_path)
+
+    # Override config setting if user requested to ignore ssl cert verification
+    if args['no_verify']:
+        conf.set('defaults', 'verify', 'false')
+
     jira_obj = jira_obj_get(conf)
 
     # use colorful output?
@@ -544,14 +560,14 @@ def main():
     # add watch to issue(s)
     if args['issue_watch_add']:
         for i in args['issue_watch_add']:
-            jira_obj.add_watcher(i, conf['user'])
+            jira_obj.add_watcher(i, conf.get('defaults', 'user'))
             log.debug("added watch for issue '%s'", i)
         sys.exit(0)
 
     # remove watch to issue(s)
     if args['issue_watch_remove']:
         for i in args['issue_watch_remove']:
-            jira_obj.remove_watcher(i, conf['user'])
+            jira_obj.remove_watcher(i, conf.get('defaults', 'user'))
             log.debug("removed watch for issue '%s'", i)
         sys.exit(0)
 

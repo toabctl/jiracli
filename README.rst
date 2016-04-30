@@ -27,6 +27,15 @@ Configuration
 =============
 During the first run, `jiracli` asks for username, password and Jira url. All values are stored in `~/.jiracli.ini`.
 
+There are some optional configuration options which can be set in the configuration
+file:
+
+verify:
+-------
+Defaults to "true". If set to "false", the cerfificate verification while talking
+to the JIRA server is disabled.
+
+
 Usage
 =====
 Try the help with::
