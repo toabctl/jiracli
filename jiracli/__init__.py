@@ -18,20 +18,22 @@
 
 from __future__ import print_function
 
-import os
-import sys
+from collections import OrderedDict
 import argparse
+import datetime
+import getpass
+import logging
+import os
+import subprocess
+import sys
+import tempfile
+
+
 from six.moves import configparser as ConfigParser
 from six.moves import input
-import logging
-import getpass
-import datetime
-import subprocess
-import tabulate
-from collections import OrderedDict
 from termcolor import colored as colorfunc
 from jira import JIRA
-import tempfile
+import tabulate
 
 # log object
 log = logging.getLogger('jiracli')
