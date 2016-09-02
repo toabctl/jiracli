@@ -384,6 +384,9 @@ def parse_args():
                              help='Move issue(s) to Resolve Issue state')
     group_issue.add_argument("--issue-trans-close", nargs='+', metavar='issue',
                              help='Move issue(s) to Closed state')
+    group_issue.add_argument("--issue-trans-custom", nargs=2,
+                             metavar='issue',
+                             help='Move issue (arg1) to state number (arg2)')
     # watchers
     group_issue.add_argument("--issue-watch-add", nargs='+', metavar='issue',
                              help='Add watch to the given issue(s)')
@@ -527,6 +530,13 @@ def main():
             # resolution={'id': '1'})
             jira_obj.transition_issue(i, 5, resolution={'id': '1'})
             log.debug("moved to progress : issue '%s'", i)
+        sys.exit(0)
+
+    # move a single issue to a custom state
+    if args['issue_trans_custom']:
+        issue, state = args['issue_trans_custom']
+        jira_obj.transition_issue(issue, state)
+        log.debug("moved to state number %s : issue '%s'", state, issue)
         sys.exit(0)
 
     # add watch to issue(s)
