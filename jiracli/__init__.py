@@ -126,8 +126,13 @@ def config_get(config_path):
 
 
 def jira_obj_get(conf):
+    verify = True
+    if 'verify' in conf and conf['verify'] in ['0', 'false', 'False', 'no', False]:
+        verify = False
+
     options = {
         'server': conf['url'],
+        'verify': verify,
     }
     return JIRA(options, basic_auth=(conf['user'], conf['password']))
 
@@ -295,6 +300,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         help='print debug information (default: %(default)s)')
+    parser.add_argument("--no-verify", action='store_true',
+                        help='do not verify the ssl certificate')
     parser.add_argument("--issue-type-list", action='store_true',
                         help='list available issue types')
     parser.add_argument("--issue-link-types-list", action='store_true',
@@ -413,6 +420,11 @@ def main():
     args = parse_args()
     setup_logging(log, args['debug'])
     conf = config_get(user_config_path)
+
+    # Override config setting if user requested to ignore ssl cert verification
+    if args['no_verify']:
+        conf['verify'] = False
+
     jira_obj = jira_obj_get(conf)
 
     # use colorful output?
