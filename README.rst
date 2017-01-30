@@ -26,6 +26,7 @@ Installation
 Configuration
 =============
 During the first run, `jiracli` asks for username, password and Jira url. All values are stored in `~/.jiracli.ini`.
+If the password key is removed from the configuration file, `jiracli` asks everytime for the password.
 
 There are some optional configuration options which can be set in the configuration
 file:
