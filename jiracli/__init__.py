@@ -123,6 +123,12 @@ def config_get(config_path):
         log.debug("%s section already available in %s", section_name,
                   config_path)
 
+    # some people prefer to not store the password on disk, so
+    # ask every time for the password
+    if not conf.has_option(section_name, "password"):
+        password = getpass.getpass()
+        conf.set(section_name, "password", password)
+
     # some optional configuration options
     if not conf.has_option(section_name, "verify"):
         conf.set(section_name, "verify", "true")
