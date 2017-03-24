@@ -193,8 +193,10 @@ def issue_format(jira_obj, issue, show_desc=False, show_comments=False,
         fields['parent'] = "%s" % (issue.fields.parent.key)
     if show_desc:
         fields['description'] = "\n%s" % (issue.fields.description)
-    fields['created'] = "%s, by %s" % (dtstr2dt(issue.fields.created),
-                                       issue.fields.reporter.name)
+    fields['created'] = dtstr2dt(issue.fields.created)
+    if hasattr(issue.fields, "reporter"):
+        fields['created'] += ", by %s" % (issue.fields.reporter.name)
+
     if hasattr(issue.fields.assignee, 'name'):
         fields['assignee'] = issue.fields.assignee.name
     fields['updated'] = dtstr2dt(issue.fields.updated)
