@@ -21,19 +21,18 @@ from __future__ import print_function
 from collections import OrderedDict
 import argparse
 import datetime
-import getpass
 import logging
 import os
 import subprocess
 import sys
 import tempfile
 
-
-from six.moves import configparser as ConfigParser
-from six.moves import input
 from termcolor import colored as colorfunc
 from jira import JIRA
 import tabulate
+
+from .config import config_get
+
 
 # log object
 log = logging.getLogger('jiracli')
@@ -70,14 +69,6 @@ def editor_get_text(text_template):
                       if not line.startswith("--")])
 
 
-def config_credentials_get():
-    # get username, password and url
-    user = input("username:")
-    password = getpass.getpass()
-    url = input("url:")
-    return user, password, url
-
-
 def sprint(jira_obj, project):
     issues = jira_obj.search_issues(
         'project = "%s" AND sprint IN openSprints()' % project)
@@ -103,37 +94,6 @@ def sprint(jira_obj, project):
     print(tabulate.tabulate(content,
                             headers=['issue', 'status',
                                      'assignee', 'summary']))
-
-
-def config_get(config_path):
-    conf = ConfigParser.RawConfigParser()
-    conf.read([config_path])
-    section_name = "defaults"
-    if not conf.has_section(section_name):
-        user, password, url = config_credentials_get()
-        conf.add_section(section_name)
-        conf.set(section_name, "user", user)
-        conf.set(section_name, "password", password)
-        conf.set(section_name, "url", url)
-        with os.fdopen(os.open(
-                config_path, os.O_WRONLY | os.O_CREAT, 0o600), 'w') as f:
-            conf.write(f)
-            log.info("username and password written to %s", config_path)
-    else:
-        log.debug("%s section already available in %s", section_name,
-                  config_path)
-
-    # some people prefer to not store the password on disk, so
-    # ask every time for the password
-    if not conf.has_option(section_name, "password"):
-        password = getpass.getpass()
-        conf.set(section_name, "password", password)
-
-    # some optional configuration options
-    if not conf.has_option(section_name, "verify"):
-        conf.set(section_name, "verify", "true")
-
-    return conf
 
 
 def jira_obj_get(conf):
