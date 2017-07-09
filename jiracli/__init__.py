@@ -130,7 +130,7 @@ def issue_status_color(status):
 
 def issue_header(issue):
     """get a single line string for an issue"""
-    if getattr(issue.fields, "priority") is not None:
+    if getattr(issue.fields, "priority", None) is not None:
         priority = "%s" % issue.fields.priority.name
     else:
         priority = "n/a"
