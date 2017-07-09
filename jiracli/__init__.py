@@ -239,10 +239,11 @@ def issue_search_result_print(jira_obj, args, searchstring_list):
         # FIXME: debug problem why comments are not available
         # if I use jira_obj.search_issues()
         # get issues again.
-        issues = [jira_obj.issue(i.key) for i in issues]
-        issue_list_print(jira_obj, issues, args['issue_desc'],
-                         args['issue_comments'], args['issue_trans'],
-                         args['issue_oneline'])
+        for i in issues:
+            issue = jira_obj.issue(i.key)
+            issue_list_print(jira_obj, [issue], args['issue_desc'],
+                             args['issue_comments'], args['issue_trans'],
+                             args['issue_oneline'])
 
 
 def filter_list_print(filter_list):
