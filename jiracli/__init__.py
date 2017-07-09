@@ -29,6 +29,8 @@ import tempfile
 
 from termcolor import colored as colorfunc
 from jira import JIRA
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import tabulate
 
 from .config import config_get
@@ -402,6 +404,11 @@ def main():
     # Override config setting if user requested to ignore ssl cert verification
     if args['no_verify']:
         conf.set('defaults', 'verify', 'false')
+
+    # disable urllib3 InsecureRequestWarning warnings
+    verify = conf.getboolean('defaults', 'verify')
+    if not verify:
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     jira_obj = jira_obj_get(conf)
 
