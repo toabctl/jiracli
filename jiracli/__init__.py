@@ -29,13 +29,15 @@ import tempfile
 
 from termcolor import colored as colorfunc
 from jira import JIRA
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import tabulate
 
 from .config import config_get
 
 
 # log object
-log = logging.getLogger('jiracli')
+LOG = logging.getLogger('jiracli')
 # path to the user configuration file
 user_config_path = os.path.expanduser('~/.jiracli.ini')
 
@@ -130,7 +132,7 @@ def issue_status_color(status):
 
 def issue_header(issue):
     """get a single line string for an issue"""
-    if getattr(issue.fields, "priority") is not None:
+    if getattr(issue.fields, "priority", None) is not None:
         priority = "%s" % issue.fields.priority.name
     else:
         priority = "n/a"
@@ -239,10 +241,11 @@ def issue_search_result_print(jira_obj, args, searchstring_list):
         # FIXME: debug problem why comments are not available
         # if I use jira_obj.search_issues()
         # get issues again.
-        issues = [jira_obj.issue(i.key) for i in issues]
-        issue_list_print(jira_obj, issues, args['issue_desc'],
-                         args['issue_comments'], args['issue_trans'],
-                         args['issue_oneline'])
+        for i in issues:
+            issue = jira_obj.issue(i.key)
+            issue_list_print(jira_obj, [issue], args['issue_desc'],
+                             args['issue_comments'], args['issue_trans'],
+                             args['issue_oneline'])
 
 
 def filter_list_print(filter_list):
@@ -393,13 +396,19 @@ def parse_args():
 
 
 def main():
+    global LOG
     args = parse_args()
-    setup_logging(log, args['debug'])
+    setup_logging(LOG, args['debug'])
     conf = config_get(user_config_path)
 
     # Override config setting if user requested to ignore ssl cert verification
     if args['no_verify']:
         conf.set('defaults', 'verify', 'false')
+
+    # disable urllib3 InsecureRequestWarning warnings
+    verify = conf.getboolean('defaults', 'verify')
+    if not verify:
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     jira_obj = jira_obj_get(conf)
 
@@ -503,7 +512,7 @@ def main():
     if args['issue_trans_open']:
         for i in args['issue_trans_open']:
             jira_obj.transition_issue(i, 3)
-            log.debug("moved to open : issue '%s'", i)
+            LOG.debug("moved to open : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Progress state
@@ -512,7 +521,7 @@ def main():
             # if somebody starts to work on an issue, assign it also
             jira_obj.assign_issue(i, conf.get('defaults', 'user'))
             jira_obj.transition_issue(i, 4)
-            log.debug("moved to progress : issue '%s'", i)
+            LOG.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Resolved state
@@ -521,28 +530,28 @@ def main():
             # jira_obj.transition_issue(i, 5, assignee={'name': conf['user']},
             # resolution={'id': '1'})
             jira_obj.transition_issue(i, 5, resolution={'id': '1'})
-            log.debug("moved to progress : issue '%s'", i)
+            LOG.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
 
     # move a single issue to a custom state
     if args['issue_trans_custom']:
         issue, state = args['issue_trans_custom']
         jira_obj.transition_issue(issue, state)
-        log.debug("moved to state number %s : issue '%s'", state, issue)
+        LOG.debug("moved to state number %s : issue '%s'", state, issue)
         sys.exit(0)
 
     # add watch to issue(s)
     if args['issue_watch_add']:
         for i in args['issue_watch_add']:
             jira_obj.add_watcher(i, conf.get('defaults', 'user'))
-            log.debug("added watch for issue '%s'", i)
+            LOG.debug("added watch for issue '%s'", i)
         sys.exit(0)
 
     # remove watch to issue(s)
     if args['issue_watch_remove']:
         for i in args['issue_watch_remove']:
             jira_obj.remove_watcher(i, conf.get('defaults', 'user'))
-            log.debug("removed watch for issue '%s'", i)
+            LOG.debug("removed watch for issue '%s'", i)
         sys.exit(0)
 
     # assign the issue
@@ -561,7 +570,7 @@ def main():
                 (args['issue_comment_add'][0]))
         issue = jira_obj.issue(args['issue_comment_add'][0])
         jira_obj.add_comment(issue, comment)
-        log.debug("comment added to issue '%s'", args['issue_comment_add'][0])
+        LOG.debug("comment added to issue '%s'", args['issue_comment_add'][0])
         sys.exit(0)
 
     # print issue by filter search
