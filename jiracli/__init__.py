@@ -290,6 +290,9 @@ def parse_args():
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with '
                         '--issue-add-comment')
+    parser.add_argument("-d", "--description", metavar='description',
+                        help='a description. can be ie used together with '
+                        '--issue-create')
     parser.add_argument("--filter-list-fav", action='store_true',
                         help='list favourite filters')
     parser.add_argument("--no-color", action='store_true',
@@ -582,8 +585,12 @@ def main():
 
     # create a new issue
     if args['issue_create']:
-        # get description from text editor
-        desc = editor_get_text("-- describe the issue here")
+        # get description from text editor when command line parameter
+        # was not given
+        desc = args['description']
+        if desc is None:
+            desc = editor_get_text("-- describe the issue here")
+
         issue_dict = {
             'project': {'key': args['issue_create'][0]},
             'issuetype': {'name': args['issue_create'][1]},
