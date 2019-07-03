@@ -463,9 +463,9 @@ def main():
     # remove label from an issue
     if args['issue_label_remove']:
         issue = jira_obj.issue(args['issue_label_remove'][0])
-        labels_new = filter(lambda x: x.lower() !=
-                            args['issue_label_remove'][1].lower(),
-                            issue.fields.labels)
+        labels_new = filter(
+            lambda x: x.lower() != args['issue_label_remove'][1].lower(),
+            issue.fields.labels)
         issue.update(fields={"labels": labels_new})
         sys.exit(0)
 
@@ -482,11 +482,14 @@ def main():
     # remove component from an issue
     if args['issue_component_remove']:
         issue = jira_obj.issue(args['issue_component_remove'][0])
+        r = args['issue_component_remove'][1].lower()
         components_new = [
             {'name': x.name}
-            for x in filter(lambda x: x.name.lower() !=
-                            args['issue_component_remove'][1].lower(),
-                            issue.fields.components)]
+            for x in filter(
+                lambda x: x.name.lower() != r,
+                issue.fields.components
+            )
+        ]
         issue.update(fields={"components": components_new})
         sys.exit(0)
 
@@ -503,10 +506,10 @@ def main():
     # remove fixVersion from an issue
     if args['issue_fix_version_remove']:
         issue = jira_obj.issue(args['issue_fix_version_remove'][0])
+        r = args['issue_fix_version_remove'][1].lower()
         fix_versions_new = [
             {'name': x.name} for x in filter(
-                lambda x: x.name.lower() !=
-                args['issue_fix_version_remove'][1].lower(),
+                lambda x: x.name.lower() != r,
                 issue.fields.fixVersions)]
         issue.update(fields={"fixVersions": fix_versions_new})
         sys.exit(0)
