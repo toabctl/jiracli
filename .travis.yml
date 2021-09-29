@@ -1,10 +1,25 @@
-# Docker Infrastructure (see http://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure/ )
 sudo: false
-
 language: python
-python:
-  - "2.7"
+matrix:
+  include:
+  - python: 3.8
+    env: TOX_ENV=pep8
+  - python: 2.7
+    env: TOX_ENV=py27
+  - python: 3.6
+    env: TOX_ENV=py36
+  - python: 3.8
+    env: TOX_ENV=py38
 install:
-  - pip install pep8
+- pip install tox
 script:
-  - pep8 --ignore=E731 -v jiracli
+- tox -e $TOX_ENV
+deploy:
+  provider: pypi
+  user: toabctl
+  password:
+    secure: XuykWhHY428sZ+cXdOiN81iYRtAFKRMuDMdq6/ALuV+vfUkAUwpQ8sVC+NBfN7LYBRuft/9G699AP6isARozpppSiH1fw7fX3Sxgp1nmLilgWymdtgVl7+BBiEP2YrhETNLA4iE6hzNow5/57QxxjHHDLXKZeK7/3W2Bt3iyp64=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: toabctl/jiracli

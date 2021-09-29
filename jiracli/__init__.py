@@ -18,22 +18,26 @@
 
 from __future__ import print_function
 
-import os
-import sys
-import argparse
-import ConfigParser
-import logging
-import getpass
-import datetime
-import subprocess
-import tabulate
 from collections import OrderedDict
-from termcolor import colored as colorfunc
-from jira import JIRA
+import argparse
+import datetime
+import logging
+import os
+import subprocess
+import sys
 import tempfile
 
+from termcolor import colored as colorfunc
+from jira import JIRA
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import tabulate
+
+from .config import config_get
+
+
 # log object
-log = logging.getLogger('jiracli')
+LOG = logging.getLogger('jiracli')
 # path to the user configuration file
 user_config_path = os.path.expanduser('~/.jiracli.ini')
 
@@ -56,7 +60,7 @@ def setup_logging(logger, debug):
 
 def editor_get_text(text_template):
     """get text from an editor via a tempfile"""
-    tf = tempfile.NamedTemporaryFile()
+    tf = tempfile.NamedTemporaryFile(mode="w+t", delete=False)
     tf.write("-- lines starting with '--' will be ignored\n")
     tf.write(text_template)
     tf.flush()
@@ -65,14 +69,6 @@ def editor_get_text(text_template):
     tf.seek(0)
     return "\n".join([line for line in tf.read().split('\n')
                       if not line.startswith("--")])
-
-
-def config_credentials_get():
-    # get username, password and url
-    user = raw_input("username:")
-    password = getpass.getpass()
-    url = raw_input("url:")
-    return user, password, url
 
 
 def sprint(jira_obj, project):
@@ -102,30 +98,15 @@ def sprint(jira_obj, project):
                                      'assignee', 'summary']))
 
 
-def config_get():
-    conf = ConfigParser.SafeConfigParser()
-    conf.read([user_config_path])
-    section_name = "defaults"
-    if not conf.has_section(section_name):
-        user, password, url = config_credentials_get()
-        conf.add_section(section_name)
-        conf.set(section_name, "user", user)
-        conf.set(section_name, "password", password)
-        conf.set(section_name, "url", url)
-        with open(user_config_path, 'w') as f:
-            conf.write(f)
-            log.info("username and password written to %s", user_config_path)
-    else:
-        log.debug("%s section already available in %s", section_name,
-                  user_config_path)
-    return dict(conf.items(section_name))
-
-
 def jira_obj_get(conf):
+    verify = conf.getboolean('defaults', 'verify')
+
     options = {
-        'server': conf['url'],
+        'server': conf.get('defaults', 'url'),
+        'verify': verify,
     }
-    return JIRA(options, basic_auth=(conf['user'], conf['password']))
+    return JIRA(options, basic_auth=(conf.get('defaults', 'user'),
+                                     conf.get('defaults', 'password')))
 
 
 def dtstr2dt(dtstr):
@@ -151,7 +132,7 @@ def issue_status_color(status):
 
 def issue_header(issue):
     """get a single line string for an issue"""
-    if hasattr(issue.fields, "priority"):
+    if getattr(issue.fields, "priority", None) is not None:
         priority = "%s" % issue.fields.priority.name
     else:
         priority = "n/a"
@@ -174,8 +155,10 @@ def issue_format(jira_obj, issue, show_desc=False, show_comments=False,
         fields['parent'] = "%s" % (issue.fields.parent.key)
     if show_desc:
         fields['description'] = "\n%s" % (issue.fields.description)
-    fields['created'] = "%s, by %s" % (dtstr2dt(issue.fields.created),
-                                       issue.fields.reporter.name)
+    fields['created'] = dtstr2dt(issue.fields.created)
+    if hasattr(issue.fields, "reporter"):
+        fields['created'] += ", by %s" % (issue.fields.reporter.name)
+
     if hasattr(issue.fields.assignee, 'name'):
         fields['assignee'] = issue.fields.assignee.name
     fields['updated'] = dtstr2dt(issue.fields.updated)
@@ -258,10 +241,11 @@ def issue_search_result_print(jira_obj, args, searchstring_list):
         # FIXME: debug problem why comments are not available
         # if I use jira_obj.search_issues()
         # get issues again.
-        issues = [jira_obj.issue(i.key) for i in issues]
-        issue_list_print(jira_obj, issues, args['issue_desc'],
-                         args['issue_comments'], args['issue_trans'],
-                         args['issue_oneline'])
+        for i in issues:
+            issue = jira_obj.issue(i.key)
+            issue_list_print(jira_obj, [issue], args['issue_desc'],
+                             args['issue_comments'], args['issue_trans'],
+                             args['issue_oneline'])
 
 
 def filter_list_print(filter_list):
@@ -291,6 +275,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         help='print debug information (default: %(default)s)')
+    parser.add_argument("--no-verify", action='store_true',
+                        help='do not verify the ssl certificate')
     parser.add_argument("--issue-type-list", action='store_true',
                         help='list available issue types')
     parser.add_argument("--issue-link-types-list", action='store_true',
@@ -304,6 +290,9 @@ def parse_args():
     parser.add_argument("-m", "--message", nargs=1, metavar='message',
                         help='a message. can be ie used together with '
                         '--issue-add-comment')
+    parser.add_argument("-d", "--description", metavar='description',
+                        help='a description. can be ie used together with '
+                        '--issue-create')
     parser.add_argument("--filter-list-fav", action='store_true',
                         help='list favourite filters')
     parser.add_argument("--no-color", action='store_true',
@@ -382,12 +371,19 @@ def parse_args():
                              help='Move issue(s) to Resolve Issue state')
     group_issue.add_argument("--issue-trans-close", nargs='+', metavar='issue',
                              help='Move issue(s) to Closed state')
+    group_issue.add_argument("--issue-trans-custom", nargs=2,
+                             metavar='issue',
+                             help='Move issue (arg1) to state number (arg2)')
     # watchers
     group_issue.add_argument("--issue-watch-add", nargs='+', metavar='issue',
                              help='Add watch to the given issue(s)')
     group_issue.add_argument("--issue-watch-remove", nargs='+',
                              metavar='issue',
                              help='Remove watch from the given issue(s)')
+    # assignee
+    group_issue.add_argument("--issue-assign", nargs=2,
+                             metavar=('issue', 'assignee'),
+                             help='Assign the issue to the specified user')
     # fix versions
     group_issue.add_argument("--issue-fix-version-add", nargs='+',
                              metavar='issue',
@@ -403,9 +399,20 @@ def parse_args():
 
 
 def main():
+    global LOG
     args = parse_args()
-    setup_logging(log, args['debug'])
-    conf = config_get()
+    setup_logging(LOG, args['debug'])
+    conf = config_get(user_config_path)
+
+    # Override config setting if user requested to ignore ssl cert verification
+    if args['no_verify']:
+        conf.set('defaults', 'verify', 'false')
+
+    # disable urllib3 InsecureRequestWarning warnings
+    verify = conf.getboolean('defaults', 'verify')
+    if not verify:
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
     jira_obj = jira_obj_get(conf)
 
     # use colorful output?
@@ -456,9 +463,9 @@ def main():
     # remove label from an issue
     if args['issue_label_remove']:
         issue = jira_obj.issue(args['issue_label_remove'][0])
-        labels_new = filter(lambda x: x.lower() !=
-                            args['issue_label_remove'][1].lower(),
-                            issue.fields.labels)
+        labels_new = filter(
+            lambda x: x.lower() != args['issue_label_remove'][1].lower(),
+            issue.fields.labels)
         issue.update(fields={"labels": labels_new})
         sys.exit(0)
 
@@ -475,11 +482,14 @@ def main():
     # remove component from an issue
     if args['issue_component_remove']:
         issue = jira_obj.issue(args['issue_component_remove'][0])
+        r = args['issue_component_remove'][1].lower()
         components_new = [
             {'name': x.name}
-            for x in filter(lambda x: x.name.lower() !=
-                            args['issue_component_remove'][1].lower(),
-                            issue.fields.components)]
+            for x in filter(
+                lambda x: x.name.lower() != r,
+                issue.fields.components
+            )
+        ]
         issue.update(fields={"components": components_new})
         sys.exit(0)
 
@@ -496,10 +506,10 @@ def main():
     # remove fixVersion from an issue
     if args['issue_fix_version_remove']:
         issue = jira_obj.issue(args['issue_fix_version_remove'][0])
+        r = args['issue_fix_version_remove'][1].lower()
         fix_versions_new = [
             {'name': x.name} for x in filter(
-                lambda x: x.name.lower() !=
-                args['issue_fix_version_remove'][1].lower(),
+                lambda x: x.name.lower() != r,
                 issue.fields.fixVersions)]
         issue.update(fields={"fixVersions": fix_versions_new})
         sys.exit(0)
@@ -508,14 +518,16 @@ def main():
     if args['issue_trans_open']:
         for i in args['issue_trans_open']:
             jira_obj.transition_issue(i, 3)
-            log.debug("moved to open : issue '%s'", i)
+            LOG.debug("moved to open : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Progress state
     if args['issue_trans_start']:
         for i in args['issue_trans_start']:
+            # if somebody starts to work on an issue, assign it also
+            jira_obj.assign_issue(i, conf.get('defaults', 'user'))
             jira_obj.transition_issue(i, 4)
-            log.debug("moved to progress : issue '%s'", i)
+            LOG.debug("moved to progress : issue '%s'", i)
         sys.exit(0)
 
     # move issue(s) to Start Resolved state
@@ -524,21 +536,34 @@ def main():
             # jira_obj.transition_issue(i, 5, assignee={'name': conf['user']},
             # resolution={'id': '1'})
             jira_obj.transition_issue(i, 5, resolution={'id': '1'})
-            log.debug("moved to progress : issue '%s'", i)
+            LOG.debug("moved to progress : issue '%s'", i)
+        sys.exit(0)
+
+    # move a single issue to a custom state
+    if args['issue_trans_custom']:
+        issue, state = args['issue_trans_custom']
+        jira_obj.transition_issue(issue, state)
+        LOG.debug("moved to state number %s : issue '%s'", state, issue)
         sys.exit(0)
 
     # add watch to issue(s)
     if args['issue_watch_add']:
         for i in args['issue_watch_add']:
-            jira_obj.add_watcher(i, conf['user'])
-            log.debug("added watch for issue '%s'", i)
+            jira_obj.add_watcher(i, conf.get('defaults', 'user'))
+            LOG.debug("added watch for issue '%s'", i)
         sys.exit(0)
 
     # remove watch to issue(s)
     if args['issue_watch_remove']:
         for i in args['issue_watch_remove']:
-            jira_obj.remove_watcher(i, conf['user'])
-            log.debug("removed watch for issue '%s'", i)
+            jira_obj.remove_watcher(i, conf.get('defaults', 'user'))
+            LOG.debug("removed watch for issue '%s'", i)
+        sys.exit(0)
+
+    # assign the issue
+    if args['issue_assign']:
+        issue, assignee = args['issue_assign']
+        jira_obj.assign_issue(issue, assignee)
         sys.exit(0)
 
     # add comment to issue
@@ -551,7 +576,7 @@ def main():
                 (args['issue_comment_add'][0]))
         issue = jira_obj.issue(args['issue_comment_add'][0])
         jira_obj.add_comment(issue, comment)
-        log.debug("comment added to issue '%s'", args['issue_comment_add'][0])
+        LOG.debug("comment added to issue '%s'", args['issue_comment_add'][0])
         sys.exit(0)
 
     # print issue by filter search
@@ -563,8 +588,12 @@ def main():
 
     # create a new issue
     if args['issue_create']:
-        # get description from text editor
-        desc = editor_get_text("-- describe the issue here")
+        # get description from text editor when command line parameter
+        # was not given
+        desc = args['description']
+        if desc is None:
+            desc = editor_get_text("-- describe the issue here")
+
         issue_dict = {
             'project': {'key': args['issue_create'][0]},
             'issuetype': {'name': args['issue_create'][1]},

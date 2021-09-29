@@ -31,6 +31,16 @@ Uninstallation
 Configuration
 =============
 During the first run, `jiracli` asks for username, password and Jira url. All values are stored in `~/.jiracli.ini`.
+If the password key is removed from the configuration file, `jiracli` asks everytime for the password.
+
+There are some optional configuration options which can be set in the configuration
+file:
+
+verify:
+-------
+Defaults to "true". If set to "false", the cerfificate verification while talking
+to the JIRA server is disabled.
+
 
 Usage
 =====
@@ -170,3 +180,23 @@ The following command will show you the current ongoing sprint of a project::
   RD-1517  Refused         Nobody      Please add a green poney
   RD-1516  Resolved        user_x      My poney is not pink enough
 
+=======
+Example: Assign an issue
+------------------------
+The following command will assign an issue to a given user::
+
+  ./jiracli --issue-assign DOCUMENT-628 t.bechtold
+
+
+Contributing
+============
+`jiracli` is hosted on `github`_ . Please send pull requests or create
+issus there.
+
+Testing
+-------
+tox is used for testing. To execute i.e. the pep8 style checks, run::
+
+  tox -epep8
+
+.. _github: https://github.com/toabctl/jiracli
