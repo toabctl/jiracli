@@ -299,9 +299,9 @@ def parse_args():
                         help='disable colorful output (default: %(default)s)')
     group_issue = parser.add_argument_group('issue')
     # create
-    group_issue.add_argument('-c', '--issue-create', nargs=5,
+    group_issue.add_argument('-c', '--issue-create', nargs=6,
                              metavar=('project-key', 'issue-type',
-                                      'summary', 'labels', 'components'),
+                                      'summary', 'labels', 'components', 'assignee'),
                              help='create a new issue. "labels" can be a '
                              'single label or a comma seperated list of '
                              'labels. "components" can be a comma seperated '
@@ -600,6 +600,7 @@ def main():
             'summary': args['issue_create'][2],
             'description': desc,
         }
+        assignee = '';
 
         if len(args['issue_create'][3]) > 0:
             issue_dict['labels'] = args['issue_create'][3].split(',')
@@ -608,10 +609,17 @@ def main():
             issue_dict['components'] = [
                 {'name': c} for c in args['issue_create'][4].split(',')]
 
+        if len(args['issue_create'][5]) > 0:
+            assignee = args['issue_create'][5]
+
         if args['issue_parent']:
             issue_dict['parent'] = {'id': args['issue_parent']}
 
         new_issue = jira_obj.create_issue(fields=issue_dict)
+
+        if len(assignee) > 0:
+            new_issue.update(assignee={'name': assignee})
+
         issue_list_print(jira_obj, [new_issue], True, True, False, False)
         sys.exit(0)
 

@@ -21,7 +21,12 @@ Installation
 
  * or directly from the extracted source::
 
-     python setup.py install
+     python setup.py install --record installed_files.txt
+
+Uninstallation
+==============
+
+ * cat installed_files.txt | xargs rm -rf
 
 Configuration
 =============
@@ -45,9 +50,10 @@ Try the help with::
 
 Example: create a new issue:
 ----------------------------
-The following command creates a new issue for the project PROJECT. Issue type is `Dev Bug`, labels are `abc` and `def` and components are `xxx` and `yyyy`::
+The following command creates a new issue for the project PROJECT. Issue type is `Dev Bug`, labels are `abc` and `def` and components are `xxx` and `yyyy`.
+A new addition is the `assignee` field where you can directly assign an issue.
 
-  ./jiracli  -c PROJECT "Dev Bug" "my test summary" "abc,def" "xxx,yyyy"
+  ./jiracli  -c PROJECT "Dev Bug" "my test summary" "abc,def" "xxx,yyyy" "assignee"
 
 
 Example: show a single issue:

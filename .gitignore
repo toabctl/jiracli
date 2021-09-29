@@ -4,4 +4,6 @@ jiracli.egg-info/
 build
 AUTHORS
 ChangeLog
+.idea
+installed_files.txt
 .tox
