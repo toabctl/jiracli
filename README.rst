@@ -1,6 +1,6 @@
 Jira command line interface
 ===========================
-.. image:: https://github.com/toabctl/jiracli/actions/workflows/pr/badge.svg
+.. image:: https://github.com/toabctl/jiracli/actions/workflows/pr.yaml/badge.svg
     :target: https://github.com/toabctl/jiracli
 
 `jiracli` is a simple command line interface based on the `jira` module. The module uses the REST API to communicate with the Jira instance.
